@@ -1,0 +1,77 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <Title>QingYi.Cryption</Title>
+    <Version>1.1.0-beta1</Version>
+    <Authors>QingYi-Studio</Authors>
+    <Description>A simple library that can be quickly encrypted and decrypted, based on native C#.
+For business please send Issue or contact us directly.</Description>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/QingYi-Studio/dotnet-Library</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/QingYi-Studio/dotnet-Library</PackageProjectUrl>
+    <PackageTags>Encrypt;Decrypt;Crypt;Cryption;Des;Sha</PackageTags>
+    <PackageIcon>use.png</PackageIcon>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageReleaseNotes>CBC bug fix</PackageReleaseNotes>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="readme.md" />
+    <None Remove="use.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="readme.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </Content>
+    <Content Include="use.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="DES\mode_diff.md">
+      <Pack>True</Pack>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="MD\V1\" />
+    <Folder Include="MD\V2\" />
+    <Folder Include="MD\V3\" />
+    <Folder Include="MD\V4\" />
+    <Folder Include="MD\V5\" />
+    <Folder Include="RC\V2\" />
+    <Folder Include="RC\V4\" />
+    <Folder Include="RC\V5\" />
+    <Folder Include="RC\V6\" />
+    <Folder Include="SM\V1\" />
+    <Folder Include="SM\V2\" />
+    <Folder Include="SM\V3\" />
+    <Folder Include="SM\V4\" />
+    <Folder Include="SM\V7\" />
+    <Folder Include="SM\V9\" />
+    <Folder Include="SM\ZUC\" />
+    <Folder Include="TripleDES\" />
+    <Folder Include="Aes\" />
+    <Folder Include="BlowFish\" />
+    <Folder Include="Rabbit\" />
+    <Folder Include="XOR\" />
+    <Folder Include="Morse\" />
+    <Folder Include="Caesar\" />
+    <Folder Include="RSA\" />
+    <Folder Include="SHA\" />
+    <Folder Include="MAC\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+</Project>

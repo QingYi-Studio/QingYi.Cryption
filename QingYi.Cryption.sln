@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34728.123
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QingYi.Cryption", "QingYi.Cryption\QingYi.Cryption.csproj", "{8E8088B6-178B-4081-BCA3-6AE3ECF9A35C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CryptTest", "CryptTest\CryptTest.csproj", "{19C4E9CA-F5C1-444F-A871-3E3DC8C4B915}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8E8088B6-178B-4081-BCA3-6AE3ECF9A35C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8E8088B6-178B-4081-BCA3-6AE3ECF9A35C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8E8088B6-178B-4081-BCA3-6AE3ECF9A35C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8E8088B6-178B-4081-BCA3-6AE3ECF9A35C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{19C4E9CA-F5C1-444F-A871-3E3DC8C4B915}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{19C4E9CA-F5C1-444F-A871-3E3DC8C4B915}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{19C4E9CA-F5C1-444F-A871-3E3DC8C4B915}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{19C4E9CA-F5C1-444F-A871-3E3DC8C4B915}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {E2898627-43AE-4F8A-A2DB-C7C0CC5FEC28}
+	EndGlobalSection
+EndGlobal
