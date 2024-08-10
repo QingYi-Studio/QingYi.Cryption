@@ -4,7 +4,7 @@
     <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <Title>QingYi.Cryption</Title>
-    <Version>1.1.0-beta1</Version>
+    <Version>1.1.0</Version>
     <Authors>QingYi-Studio</Authors>
     <Description>A simple library that can be quickly encrypted and decrypted, based on native C#.
 For business please send Issue or contact us directly.</Description>
@@ -16,9 +16,11 @@ For business please send Issue or contact us directly.</Description>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageReleaseNotes>Fixed a series of issues with DES encryption.
 Added XOR encryption support.
+Added Caesar encryption support.
 ——————————
 修复了DES加密的一系列问题。
-添加了XOR加密支持。</PackageReleaseNotes>
+添加了XOR加密支持。
+添加了凯撒加密支持。</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
@@ -27,7 +29,7 @@ Added XOR encryption support.
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="readme.md">
+    <Content Include="README.md">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </Content>
@@ -44,7 +46,6 @@ Added XOR encryption support.
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="MD\V1\" />
     <Folder Include="MD\V2\" />
     <Folder Include="MD\V3\" />
     <Folder Include="MD\V4\" />
@@ -65,7 +66,6 @@ Added XOR encryption support.
     <Folder Include="BlowFish\" />
     <Folder Include="Rabbit\" />
     <Folder Include="Morse\" />
-    <Folder Include="Caesar\" />
     <Folder Include="RSA\" />
     <Folder Include="SHA\" />
     <Folder Include="MAC\" />
