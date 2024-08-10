@@ -44,7 +44,6 @@ Added XOR encryption support.
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="MD\V1\" />
     <Folder Include="MD\V2\" />
     <Folder Include="MD\V3\" />
     <Folder Include="MD\V4\" />
