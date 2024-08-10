@@ -5,7 +5,9 @@ VisualStudioVersion = 17.9.34728.123
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QingYi.Cryption", "QingYi.Cryption\QingYi.Cryption.csproj", "{8E8088B6-178B-4081-BCA3-6AE3ECF9A35C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CryptTest", "CryptTest\CryptTest.csproj", "{19C4E9CA-F5C1-444F-A871-3E3DC8C4B915}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CryptTest", "CryptTest", "{0E2B2408-82A1-471F-BE1E-31C69E5F5C2E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Des", "DesCryptTest\Des.csproj", "{22236CBE-B6E9-4EBB-9730-53966DA76848}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,13 +19,16 @@ Global
 		{8E8088B6-178B-4081-BCA3-6AE3ECF9A35C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8E8088B6-178B-4081-BCA3-6AE3ECF9A35C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8E8088B6-178B-4081-BCA3-6AE3ECF9A35C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{19C4E9CA-F5C1-444F-A871-3E3DC8C4B915}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{19C4E9CA-F5C1-444F-A871-3E3DC8C4B915}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{19C4E9CA-F5C1-444F-A871-3E3DC8C4B915}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{19C4E9CA-F5C1-444F-A871-3E3DC8C4B915}.Release|Any CPU.Build.0 = Release|Any CPU
+		{22236CBE-B6E9-4EBB-9730-53966DA76848}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{22236CBE-B6E9-4EBB-9730-53966DA76848}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{22236CBE-B6E9-4EBB-9730-53966DA76848}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{22236CBE-B6E9-4EBB-9730-53966DA76848}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{22236CBE-B6E9-4EBB-9730-53966DA76848} = {0E2B2408-82A1-471F-BE1E-31C69E5F5C2E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {E2898627-43AE-4F8A-A2DB-C7C0CC5FEC28}
