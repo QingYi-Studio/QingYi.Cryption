@@ -1,6 +1,7 @@
 ﻿# Mode diff
 
 CBC, CTS, or CFB is preferred.
+
 优先选择CBC、CTS或CFB。
 
 ## CBC
