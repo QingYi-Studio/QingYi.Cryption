@@ -5,7 +5,7 @@ using System.Text;
 
 namespace QingYi.Cryption.DES.CBC
 {
-    public class TextCryption
+    public class DesCBCTextCryption
     {
         /// <summary>
         /// The key of the text you want to encrypt/decrypt
@@ -22,7 +22,7 @@ namespace QingYi.Cryption.DES.CBC
         /// </summary>
         private readonly string text;
 
-        public TextCryption(string key, string iv, string text)
+        public DesCBCTextCryption(string key, string iv, string text)
         {
             this.key = key;
             this.iv = iv;
@@ -35,7 +35,7 @@ namespace QingYi.Cryption.DES.CBC
             byte[] keyBytes = Encoding.UTF8.GetBytes(key);
             byte[] ivBytes = Encoding.UTF8.GetBytes(iv);
 
-            using (DES desAlg = DES.Create())
+            using (System.Security.Cryptography.DES desAlg = System.Security.Cryptography.DES.Create())
             {
                 desAlg.Mode = CipherMode.CBC;
                 desAlg.Key = keyBytes;
@@ -59,7 +59,7 @@ namespace QingYi.Cryption.DES.CBC
             byte[] keyBytes = Encoding.UTF8.GetBytes(key);
             byte[] ivBytes = Encoding.UTF8.GetBytes(iv);
 
-            using (DES desAlg = DES.Create())
+            using (System.Security.Cryptography.DES desAlg = System.Security.Cryptography.DES.Create())
             {
                 desAlg.Mode = CipherMode.CBC;
                 desAlg.Key = keyBytes;

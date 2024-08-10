@@ -9,12 +9,16 @@
     <Description>A simple library that can be quickly encrypted and decrypted, based on native C#.
 For business please send Issue or contact us directly.</Description>
     <RepositoryType>git</RepositoryType>
-    <RepositoryUrl>https://github.com/QingYi-Studio/dotnet-Library</RepositoryUrl>
-    <PackageProjectUrl>https://github.com/QingYi-Studio/dotnet-Library</PackageProjectUrl>
-    <PackageTags>Encrypt;Decrypt;Crypt;Cryption;Des;Sha</PackageTags>
+    <RepositoryUrl>https://github.com/QingYi-Studio/QingYi.Cryption</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/QingYi-Studio/QingYi.Cryption</PackageProjectUrl>
+    <PackageTags>Encrypt;Decrypt;Crypt;Cryption;Des;XOR</PackageTags>
     <PackageIcon>use.png</PackageIcon>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageReleaseNotes>CBC bug fix</PackageReleaseNotes>
+    <PackageReleaseNotes>Fixed a series of issues with DES encryption.
+Added XOR encryption support.
+——————————
+修复了DES加密的一系列问题。
+添加了XOR加密支持。</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>

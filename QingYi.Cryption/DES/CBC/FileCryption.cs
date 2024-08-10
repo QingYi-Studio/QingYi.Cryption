@@ -4,7 +4,7 @@ using System.Text;
 
 namespace QingYi.Cryption.DES.CBC
 {
-    public class FileCryption
+    public class DesCBCFileCryption
     {
         /// <summary>
         /// The key of the file you want to encrypt/decrypt
@@ -26,7 +26,7 @@ namespace QingYi.Cryption.DES.CBC
         /// </summary>
         private readonly string outputFile;
 
-        public FileCryption(string key, string iv, string inputFile, string outputFile)
+        public DesCBCFileCryption(string key, string iv, string inputFile, string outputFile)
         {
             this.key = key;
             this.iv = iv;
@@ -39,7 +39,7 @@ namespace QingYi.Cryption.DES.CBC
             byte[] keyBytes = Encoding.UTF8.GetBytes(key);
             byte[] ivBytes = Encoding.UTF8.GetBytes(iv);
 
-            using (DES desAlg = DES.Create())
+            using (System.Security.Cryptography.DES desAlg = System.Security.Cryptography.DES.Create())
             {
                 desAlg.Mode = CipherMode.CBC;
                 desAlg.Key = keyBytes;
@@ -65,7 +65,7 @@ namespace QingYi.Cryption.DES.CBC
             byte[] keyBytes = Encoding.UTF8.GetBytes(key);
             byte[] ivBytes = Encoding.UTF8.GetBytes(iv);
 
-            using (DES desAlg = DES.Create())
+            using (System.Security.Cryptography.DES desAlg = System.Security.Cryptography.DES.Create())
             {
                 desAlg.Mode = CipherMode.CBC;
                 desAlg.Key = keyBytes;
