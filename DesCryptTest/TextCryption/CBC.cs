@@ -11,7 +11,7 @@ namespace CryptTest.TextCryption
             byte[] keyBytes = Encoding.UTF8.GetBytes(key);
             byte[] ivBytes = Encoding.UTF8.GetBytes(iv);
 
-            using (DES desAlg = DES.Create())
+            using (System.Security.Cryptography.DES desAlg = System.Security.Cryptography.DES.Create())
             {
                 desAlg.Mode = CipherMode.CBC;
                 desAlg.Key = keyBytes;
@@ -35,7 +35,7 @@ namespace CryptTest.TextCryption
             byte[] keyBytes = Encoding.UTF8.GetBytes(key);
             byte[] ivBytes = Encoding.UTF8.GetBytes(iv);
 
-            using (DES desAlg = DES.Create())
+            using (System.Security.Cryptography.DES desAlg = System.Security.Cryptography.DES.Create())
             {
                 desAlg.Mode = CipherMode.CBC;
                 desAlg.Key = keyBytes;
