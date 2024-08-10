@@ -5,7 +5,10 @@ using System.Text;
 
 namespace QingYi.Cryption.DES.CBC
 {
-    public class DesCBCTextCryption
+    /// <summary>
+    /// It is used to encrypt DES in CBC mode.(Only for text.)
+    /// </summary>
+    public class DesCbcTextCryption
     {
         /// <summary>
         /// The key of the text you want to encrypt/decrypt
@@ -22,7 +25,7 @@ namespace QingYi.Cryption.DES.CBC
         /// </summary>
         private readonly string text;
 
-        public DesCBCTextCryption(string key, string iv, string text)
+        public DesCbcTextCryption(string key, string iv, string text)
         {
             this.key = key;
             this.iv = iv;

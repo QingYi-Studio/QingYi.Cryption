@@ -4,7 +4,10 @@ using System.Text;
 
 namespace QingYi.Cryption.DES.CBC
 {
-    public class DesCBCFileCryption
+    /// <summary>
+    /// It is used to encrypt DES in CBC mode.(Only for file.)
+    /// </summary>
+    public class DesCbcFileCryption
     {
         /// <summary>
         /// The key of the file you want to encrypt/decrypt
@@ -26,7 +29,7 @@ namespace QingYi.Cryption.DES.CBC
         /// </summary>
         private readonly string outputFile;
 
-        public DesCBCFileCryption(string key, string iv, string inputFile, string outputFile)
+        public DesCbcFileCryption(string key, string iv, string inputFile, string outputFile)
         {
             this.key = key;
             this.iv = iv;
