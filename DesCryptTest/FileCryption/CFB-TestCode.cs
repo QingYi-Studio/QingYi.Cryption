@@ -1,8 +1,8 @@
 ﻿using System.Text;
 
-namespace DES.FileCryption
+namespace DES.TextCryption
 {
-    internal class CFBFT
+    internal class CFBTT
     {
         public static void TCode()
         {
@@ -13,19 +13,18 @@ namespace DES.FileCryption
             // Initialize cipher
             var cipher = new CFB(key, iv);
 
-            // Example string to encrypt
-            string originalText = "Hello, DES in CFB mode!";
-            byte[] plainTextBytes = Encoding.UTF8.GetBytes(originalText);
+            // Paths to input and output files
+            string inputFilePath = "test.txt";
+            string encryptedFilePath = "encryptedfile.des-encrypt";
+            string decryptedFilePath = "decryptedfile.txt";
 
-            // Encrypt
-            byte[] encryptedBytes = cipher.Encrypt(plainTextBytes);
-            string encryptedBase64 = Convert.ToBase64String(encryptedBytes);
-            Console.WriteLine($"Encrypted (Base64): {encryptedBase64}");
+            // Encrypt the file
+            cipher.EncryptFile(inputFilePath, encryptedFilePath);
+            Console.WriteLine("File encrypted successfully.");
 
-            // Decrypt
-            byte[] decryptedBytes = cipher.Decrypt(Convert.FromBase64String(encryptedBase64));
-            string decryptedText = Encoding.UTF8.GetString(decryptedBytes);
-            Console.WriteLine($"Decrypted: {decryptedText}");
+            // Decrypt the file
+            cipher.DecryptFile(encryptedFilePath, decryptedFilePath);
+            Console.WriteLine("File decrypted successfully.");
         }
     }
 }

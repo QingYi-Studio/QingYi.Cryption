@@ -1,3 +1,3 @@
-﻿using DES.FileCryption;
+﻿using DES.TextCryption;
 
-CFBFT.TCode();
+CFBTT.TCode();

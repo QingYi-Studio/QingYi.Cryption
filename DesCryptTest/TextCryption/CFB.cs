@@ -1,6 +1,6 @@
 ﻿using System.Security.Cryptography;
 
-namespace DES.TextCryption
+namespace DES.FileCryption
 {
     internal class CFB
     {
@@ -15,7 +15,7 @@ namespace DES.TextCryption
             this.iv = iv;
         }
 
-        public void EncryptFile(string inputFilePath, string outputFilePath)
+        public byte[] Encrypt(byte[] plainText)
         {
             using (var des = System.Security.Cryptography.DES.Create())
             {
@@ -25,16 +25,18 @@ namespace DES.TextCryption
                 des.Padding = PaddingMode.PKCS7;
 
                 using (var encryptor = des.CreateEncryptor())
-                using (var inputFileStream = new FileStream(inputFilePath, FileMode.Open, FileAccess.Read))
-                using (var outputFileStream = new FileStream(outputFilePath, FileMode.Create, FileAccess.Write))
-                using (var cryptoStream = new CryptoStream(outputFileStream, encryptor, CryptoStreamMode.Write))
+                using (var ms = new MemoryStream())
                 {
-                    inputFileStream.CopyTo(cryptoStream);
+                    using (var cs = new CryptoStream(ms, encryptor, CryptoStreamMode.Write))
+                    {
+                        cs.Write(plainText, 0, plainText.Length);
+                    }
+                    return ms.ToArray();
                 }
             }
         }
 
-        public void DecryptFile(string inputFilePath, string outputFilePath)
+        public byte[] Decrypt(byte[] cipherText)
         {
             using (var des = System.Security.Cryptography.DES.Create())
             {
@@ -44,11 +46,12 @@ namespace DES.TextCryption
                 des.Padding = PaddingMode.PKCS7;
 
                 using (var decryptor = des.CreateDecryptor())
-                using (var inputFileStream = new FileStream(inputFilePath, FileMode.Open, FileAccess.Read))
-                using (var outputFileStream = new FileStream(outputFilePath, FileMode.Create, FileAccess.Write))
-                using (var cryptoStream = new CryptoStream(inputFileStream, decryptor, CryptoStreamMode.Read))
+                using (var ms = new MemoryStream(cipherText))
+                using (var cs = new CryptoStream(ms, decryptor, CryptoStreamMode.Read))
+                using (var result = new MemoryStream())
                 {
-                    cryptoStream.CopyTo(outputFileStream);
+                    cs.CopyTo(result);
+                    return result.ToArray();
                 }
             }
         }
