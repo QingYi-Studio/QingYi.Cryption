@@ -27,7 +27,7 @@ Added XOR encryption support.
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="readme.md">
+    <Content Include="README.md">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </Content>
