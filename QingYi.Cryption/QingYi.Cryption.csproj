@@ -4,7 +4,7 @@
     <TargetFrameworks>netstandard2.1;net6.0;net8.0;net6.0-windows;net8.0-windows</TargetFrameworks>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <Title>QingYi.Cryption</Title>
-    <Version>2.1.0</Version>
+    <Version>2.1.0-beta1</Version>
     <Authors>QingYi-Studio</Authors>
     <Description>A simple library that can be quickly encrypted and decrypted, based on native C#.
 For business please send Issue or contact us directly.</Description>
@@ -52,9 +52,8 @@ Added Morse code support
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="MD\V2\" />
-    <Folder Include="MD\V4\" />
-    <Folder Include="MD\V5\" />
+    <Folder Include="MessageDigest\MD4\" />
+    <Folder Include="MessageDigest\MD5\" />
     <Folder Include="RC\V2\" />
     <Folder Include="RC\V4\" />
     <Folder Include="RC\V5\" />
