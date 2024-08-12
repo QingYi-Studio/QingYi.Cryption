@@ -65,7 +65,6 @@ Added Caesar encryption support.
     <Folder Include="Aes\" />
     <Folder Include="BlowFish\" />
     <Folder Include="Rabbit\" />
-    <Folder Include="Morse\" />
     <Folder Include="RSA\" />
     <Folder Include="SHA\" />
     <Folder Include="MAC\" />
