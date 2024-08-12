@@ -2,7 +2,7 @@
 using System.Security.Cryptography;
 using System.Text;
 
-namespace QingYi.Cryption.DES.CBC
+namespace DES.CBC
 {
     /// <summary>
     /// It is used to encrypt DES in CBC mode.(Only for file.)

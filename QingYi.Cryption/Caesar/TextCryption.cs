@@ -1,6 +1,6 @@
 ﻿using System.Text;
 
-namespace QingYi.Cryption.Caesar
+namespace Caesar
 {
     public class CaesarTextCryption
     {
