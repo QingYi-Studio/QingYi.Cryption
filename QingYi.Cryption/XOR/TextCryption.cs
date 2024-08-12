@@ -1,7 +1,7 @@
 ﻿using System.Text;
 using System;
 
-namespace QingYi.Cryption.XOR
+namespace XOR
 {
     public class XORTextCryption
     {
