@@ -17,6 +17,20 @@ namespace Morse
             reverseMorseCodeMap = CreateReverseMorseCodeMap(morseCodeMap);
         }
 
+        public string TextToMorse(string text)
+        {
+            string base16 = TextToBase16(text);
+            string morse = Base16ToMorse(base16);
+            return morse;
+        }
+
+        public string MorseToText(string morse)
+        {
+            string base16 = MorseToBase16(morse);
+            string text = Base16ToText(base16);
+            return text;
+        }
+
         /// <summary>
         /// Converts a text string to its Base16 (hexadecimal) representation.<br></br>
         /// 将文本字符串转换为其 Base16（十六进制）表示。

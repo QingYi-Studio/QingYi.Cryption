@@ -11,16 +11,17 @@ For business please send Issue or contact us directly.</Description>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/QingYi-Studio/QingYi.Cryption</RepositoryUrl>
     <PackageProjectUrl>https://github.com/QingYi-Studio/QingYi.Cryption</PackageProjectUrl>
-    <PackageTags>Encrypt;Decrypt;Crypt;Cryption;Des;XOR</PackageTags>
+    <PackageTags>Encrypt;Decrypt;Crypt;Cryption;Des;XOR;Morse</PackageTags>
     <PackageIcon>use.png</PackageIcon>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageReleaseNotes>Fixed a series of issues with DES encryption.
-Added XOR encryption support.
-Added Caesar encryption support.
+    <PackageReleaseNotes>Optimized namespace
+Support for later versions
+Added Morse code support
 ——————————
-修复了DES加密的一系列问题。
-添加了XOR加密支持。
-添加了凯撒加密支持。</PackageReleaseNotes>
+优化命名空间
+支持更高版本
+添加摩斯电码支持
+	</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
@@ -42,6 +43,9 @@ Added Caesar encryption support.
   <ItemGroup>
     <None Update="DES\mode_diff.md">
       <Pack>True</Pack>
+    </None>
+    <None Update="Morse\custom-dictionary-example.md">
+	  <Pack>True</Pack>
     </None>
   </ItemGroup>
 
