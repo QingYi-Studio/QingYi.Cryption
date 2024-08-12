@@ -11,7 +11,7 @@ For business please send Issue or contact us directly.</Description>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/QingYi-Studio/QingYi.Cryption</RepositoryUrl>
     <PackageProjectUrl>https://github.com/QingYi-Studio/QingYi.Cryption</PackageProjectUrl>
-    <PackageTags>Encrypt;Decrypt;Crypt;Cryption;Des;XOR;Morse</PackageTags>
+    <PackageTags>Encrypt;Decrypt;Cryption;Des;XOR;Morse;MD5</PackageTags>
     <PackageIcon>use.png</PackageIcon>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageReleaseNotes>Optimized namespace
@@ -22,6 +22,8 @@ Added Morse code support
 支持更高版本
 添加摩斯电码支持
 	</PackageReleaseNotes>
+    <ProduceReferenceAssembly>True</ProduceReferenceAssembly>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -51,7 +53,6 @@ Added Morse code support
 
   <ItemGroup>
     <Folder Include="MD\V2\" />
-    <Folder Include="MD\V3\" />
     <Folder Include="MD\V4\" />
     <Folder Include="MD\V5\" />
     <Folder Include="RC\V2\" />
