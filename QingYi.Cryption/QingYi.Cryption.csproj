@@ -1,27 +1,22 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.1;net6.0;net8.0</TargetFrameworks>
+    <TargetFrameworks>netstandard2.1;net6.0;net8.0;net6.0-windows;net8.0-windows</TargetFrameworks>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <Title>QingYi.Cryption</Title>
-    <Version>1.1.0</Version>
+    <Version>2.1.0-beta1</Version>
     <Authors>QingYi-Studio</Authors>
     <Description>A simple library that can be quickly encrypted and decrypted, based on native C#.
 For business please send Issue or contact us directly.</Description>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/QingYi-Studio/QingYi.Cryption</RepositoryUrl>
     <PackageProjectUrl>https://github.com/QingYi-Studio/QingYi.Cryption</PackageProjectUrl>
-    <PackageTags>Encrypt;Decrypt;Crypt;Cryption;Des;XOR;Morse</PackageTags>
+    <PackageTags>Encrypt;Decrypt;Cryption;Des;XOR;Morse;MessageDigest</PackageTags>
     <PackageIcon>use.png</PackageIcon>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageReleaseNotes>Optimized namespace
-Support for later versions
-Added Morse code support
-——————————
-优化命名空间
-支持更高版本
-添加摩斯电码支持
-	</PackageReleaseNotes>
+    <PackageReleaseNotes>support md2</PackageReleaseNotes>
+    <ProduceReferenceAssembly>True</ProduceReferenceAssembly>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -50,10 +45,8 @@ Added Morse code support
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="MD\V2\" />
-    <Folder Include="MD\V3\" />
-    <Folder Include="MD\V4\" />
-    <Folder Include="MD\V5\" />
+    <Folder Include="MessageDigest\MD4\" />
+    <Folder Include="MessageDigest\MD5\" />
     <Folder Include="RC\V2\" />
     <Folder Include="RC\V4\" />
     <Folder Include="RC\V5\" />
