@@ -1,5 +1,4 @@
 ﻿using MD2T;
-using System.Security.Cryptography;
 
 // 示例输入数据
 byte[] inputData = System.Text.Encoding.UTF8.GetBytes("Hello, world!");
