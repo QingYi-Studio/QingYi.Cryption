@@ -4,14 +4,14 @@
     <TargetFrameworks>netstandard2.1;net6.0;net7.0;net8.0;net6.0-windows;net7.0-windows;net8.0-windows</TargetFrameworks>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <Title>QingYi.Cryption</Title>
-    <Version>2.1.0</Version>
+    <Version>2.1.0-beta3</Version>
     <Authors>QingYi-Studio</Authors>
     <Description>A simple library that can be quickly encrypted and decrypted, based on native C#.
 For business please send Issue or contact us directly.</Description>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/QingYi-Studio/QingYi.Cryption</RepositoryUrl>
     <PackageProjectUrl>https://github.com/QingYi-Studio/QingYi.Cryption</PackageProjectUrl>
-    <PackageTags>Encrypt;Decrypt;Cryption;Des;XOR;Morse;MessageDigest</PackageTags>
+    <PackageTags>Crypto;Des;XOR;Morse;MessageDigest</PackageTags>
     <PackageIcon>use.png</PackageIcon>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageReleaseNotes>support md4</PackageReleaseNotes>
