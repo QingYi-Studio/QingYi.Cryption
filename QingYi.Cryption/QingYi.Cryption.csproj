@@ -51,6 +51,9 @@ For business please send Issue or contact us directly.</Description>
     <Folder Include="RC\V4\" />
     <Folder Include="RC\V5\" />
     <Folder Include="RC\V6\" />
+    <Folder Include="SHA\SHA1\" />
+    <Folder Include="SHA\SHA2\" />
+    <Folder Include="SHA\SHA3\" />
     <Folder Include="SM\V1\" />
     <Folder Include="SM\V2\" />
     <Folder Include="SM\V3\" />
@@ -63,7 +66,6 @@ For business please send Issue or contact us directly.</Description>
     <Folder Include="BlowFish\" />
     <Folder Include="Rabbit\" />
     <Folder Include="RSA\" />
-    <Folder Include="SHA\" />
     <Folder Include="MAC\" />
   </ItemGroup>
 
