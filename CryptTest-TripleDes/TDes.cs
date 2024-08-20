@@ -296,4 +296,9 @@ namespace CryptTest_TripleDes
             }
         }
     }
+
+    public class TDesFile
+    {
+
+    }
 }
