@@ -61,6 +61,7 @@ For business please send Issue or contact us directly.</Description>
     <Folder Include="Rabbit\" />
     <Folder Include="RSA\" />
     <Folder Include="MAC\" />
+    <Folder Include="HMAC\" />
   </ItemGroup>
 
   <ItemGroup>

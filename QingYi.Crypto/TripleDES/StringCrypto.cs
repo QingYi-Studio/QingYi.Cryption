@@ -1,5 +1,4 @@
-﻿using DES.CBC;
-using DES.ECB;
+﻿using DES;
 using System;
 using System.Text;
 
@@ -67,9 +66,9 @@ namespace TripleDES
         {
             string originText = text;
             GetKey(out string part1, out string part2, out string part3);
-            string encryptText1 = DesCbcTextCrypto.Encrypt(originText, part1, IV);
-            string encryptText2 = DesCbcTextCrypto.Encrypt(encryptText1, part2, IV);
-            string encryptText3 = DesCbcTextCrypto.Encrypt(encryptText2, part3, IV);
+            string encryptText1 = CBC.EncryptString(originText, part1, IV);
+            string encryptText2 = CBC.EncryptString(encryptText1, part2, IV);
+            string encryptText3 = CBC.EncryptString(encryptText2, part3, IV);
             return encryptText3;
         }
 
@@ -83,9 +82,9 @@ namespace TripleDES
         {
             string encryptText = text;
             GetKey(out string part1, out string part2, out string part3);
-            string decryptText1 = DesCbcTextCrypto.Decrypt(encryptText, part3, IV);
-            string decryptText2 = DesCbcTextCrypto.Decrypt(decryptText1, part2, IV);
-            string decryptText3 = DesCbcTextCrypto.Decrypt(decryptText2, part1, IV);
+            string decryptText1 = CBC.DecryptString(encryptText, part3, IV);
+            string decryptText2 = CBC.DecryptString(decryptText1, part2, IV);
+            string decryptText3 = CBC.DecryptString(decryptText2, part1, IV);
             return decryptText3;
         }
 
@@ -98,13 +97,10 @@ namespace TripleDES
         public string ECBEncrypt(string text)
         {
             GetKey(out string part1, out string part2, out string part3);
-            DesEcbTextCrypto ecb1 = new DesEcbTextCrypto(part1);
-            DesEcbTextCrypto ecb2 = new DesEcbTextCrypto(part2);
-            DesEcbTextCrypto ecb3 = new DesEcbTextCrypto(part3);
             string originText = text;
-            string encryptText1 = ecb1.EncryptString(text);
-            string encryptText2 = ecb2.EncryptString(encryptText1);
-            string encryptText3 = ecb3.EncryptString(encryptText2);
+            string encryptText1 = ECB.EncryptString(originText, part1);
+            string encryptText2 = ECB.EncryptString(encryptText1, part2);
+            string encryptText3 = ECB.EncryptString(encryptText2, part3);
             return encryptText3;
         }
 
@@ -117,13 +113,10 @@ namespace TripleDES
         public string ECBDecrypt(string text)
         {
             GetKey(out string part1, out string part2, out string part3);
-            DesEcbTextCrypto ecb1 = new DesEcbTextCrypto(part1);
-            DesEcbTextCrypto ecb2 = new DesEcbTextCrypto(part2);
-            DesEcbTextCrypto ecb3 = new DesEcbTextCrypto(part3);
             string encryptText = text;
-            string decryptText1 = ecb3.DecryptString(encryptText);
-            string decryptText2 = ecb2.DecryptString(decryptText1);
-            string decryptText3 = ecb1.DecryptString(decryptText2);
+            string decryptText1 = ECB.DecryptString(encryptText, part3);
+            string decryptText2 = ECB.DecryptString(decryptText1, part2);
+            string decryptText3 = ECB.DecryptString(decryptText2, part1);
             return decryptText3;
         }
     }
