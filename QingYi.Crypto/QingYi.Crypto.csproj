@@ -14,7 +14,7 @@ For business please send Issue or contact us directly.</Description>
     <PackageTags>Crypto;Des;XOR;Morse;MessageDigest</PackageTags>
     <PackageIcon>use.png</PackageIcon>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageReleaseNotes>support md4</PackageReleaseNotes>
+    <PackageReleaseNotes>support md5</PackageReleaseNotes>
     <ProduceReferenceAssembly>True</ProduceReferenceAssembly>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
   </PropertyGroup>
