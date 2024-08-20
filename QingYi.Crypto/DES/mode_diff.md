@@ -4,6 +4,10 @@ CBC, CTS, or CFB is preferred.
 
 优先选择CBC、CTS或CFB。
 
+Some modes have been removed due to high version force majeure.
+
+由于高版本不可抗力原因，部分模式已被移除。
+
 ## CBC
 
 The Cipher Block Chaining (CBC) mode introduces feedback. Before each plain text block is encrypted, it is combined with the cipher text of the previous block by a bitwise exclusive OR operation. This ensures that even if the plain text  contains many identical blocks, they will each encrypt to a different cipher text block. The initialization vector is combined with the first plain text block by a bitwise exclusive OR operation before the block is encrypted. If a single bit of the cipher text block is mangled, the corresponding plain text block will also be mangled. In addition, a bit in the subsequent block, in the same position as the original mangled bit, will be mangled.
