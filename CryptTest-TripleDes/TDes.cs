@@ -77,6 +77,16 @@ namespace CryptTest_TripleDes
             return decryptText3;
         }
 
+        public string ECBEncrypt(string text)
+        {
+            GetKey(out string part1, out string part2, out string part3);
+            ECBMode ecb1 = new ECBMode(part1);
+            ECBMode ecb2 = new ECBMode(part2);
+            ECBMode ecb3 = new ECBMode(part3);
+            string originText = text;
+            string encryptText1 = ecb1.Encrypt(text);
+        }
+
         class CBCMode
         {
             public static string DESEncrypt(string plainText, string key, string iv)
@@ -142,7 +152,7 @@ namespace CryptTest_TripleDes
                 _key = Encoding.UTF8.GetBytes(key);
             }
 
-            public byte[] Encrypt(string plainText)
+            public string Encrypt(string plainText)
             {
                 using (System.Security.Cryptography.DES des = System.Security.Cryptography.DES.Create())
                 {
@@ -152,7 +162,8 @@ namespace CryptTest_TripleDes
                     using (ICryptoTransform encryptor = des.CreateEncryptor(_key, null))
                     {
                         byte[] plainBytes = Encoding.UTF8.GetBytes(plainText);
-                        return PerformCryptography(plainBytes, encryptor);
+                        byte[] encryptedBytes = PerformCryptography(plainBytes, encryptor);
+                        return Convert.ToBase64String(encryptedBytes);
                     }
                 }
             }

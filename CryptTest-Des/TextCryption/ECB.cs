@@ -16,7 +16,7 @@ namespace DES.TextCryption
             _key = Encoding.UTF8.GetBytes(key);
         }
 
-        public byte[] Encrypt(string plainText)
+        public string Encrypt(string plainText)
         {
             using (System.Security.Cryptography.DES des = System.Security.Cryptography.DES.Create())
             {
@@ -26,7 +26,8 @@ namespace DES.TextCryption
                 using (ICryptoTransform encryptor = des.CreateEncryptor(_key, null))
                 {
                     byte[] plainBytes = Encoding.UTF8.GetBytes(plainText);
-                    return PerformCryptography(plainBytes, encryptor);
+                    byte[] encryptedBytes = PerformCryptography(plainBytes, encryptor);
+                    return Convert.ToBase64String(encryptedBytes);
                 }
             }
         }

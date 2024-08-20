@@ -34,7 +34,7 @@ namespace DES.ECB
         /// </summary>
         /// <param name="plainText">The plain text to encrypt.<br></br>要加密的纯文本。</param>
         /// <returns>The encrypted text as a byte array.|加密文本作为字节数组。</returns>
-        public byte[] Encrypt(string plainText)
+        public string Encrypt(string plainText)
         {
             using (System.Security.Cryptography.DES des = System.Security.Cryptography.DES.Create())
             {
@@ -44,7 +44,8 @@ namespace DES.ECB
                 using (ICryptoTransform encryptor = des.CreateEncryptor(_key, null))
                 {
                     byte[] plainBytes = Encoding.UTF8.GetBytes(plainText);
-                    return PerformCryptography(plainBytes, encryptor);
+                    byte[] encryptedBytes = PerformCryptography(plainBytes, encryptor);
+                    return Convert.ToBase64String(encryptedBytes);
                 }
             }
         }
