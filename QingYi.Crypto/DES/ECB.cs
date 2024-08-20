@@ -1,15 +1,14 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Security.Cryptography;
 using System.Text;
+using System;
 
-namespace DES.ECB
+namespace DES
 {
     /// <summary>
-    /// Provides methods for encrypting and decrypting files using DES encryption in ECB mode.<br></br>
-    /// 提供在ECB模式下使用DES加密对文件进行加密和解密的方法。
+    /// ECB mode.
     /// </summary>
-    public class DesEcbFileCrypto
+    public class ECB
     {
         /// <summary>
         /// Encrypts the contents of the specified input file and writes the encrypted data to the specified output file using DES encryption in ECB mode.<br></br>
@@ -109,6 +108,99 @@ namespace DES.ECB
                 {
                     byte[] decryptedBytes = PerformCryptography(fileBytes, decryptor);
                     File.WriteAllBytes(outputFilePath, decryptedBytes);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Encrypts the specified plain text using DES in ECB mode.<br></br>
+        /// 使用DES以ECB方式加密指定的明文。
+        /// </summary>
+        /// <param name="plainText">The plain text to encrypt.<br></br>要加密的纯文本。</param>
+        /// <param name="key">The encryption key as a string. It should be 8 bytes long for DES.<br></br>加密密钥为字符串。对于DES，它应该是8字节长。</param>
+        /// <returns>The encrypted text.|加密文本。</returns>
+        public static string EncryptString(string plainText, string key)
+        {
+            using (System.Security.Cryptography.DES des = System.Security.Cryptography.DES.Create())
+            {
+                des.Mode = CipherMode.ECB;
+                des.Padding = PaddingMode.PKCS7;
+
+                using (ICryptoTransform encryptor = des.CreateEncryptor(Encoding.UTF8.GetBytes(key), null))
+                {
+                    byte[] plainBytes = Encoding.UTF8.GetBytes(plainText);
+                    byte[] encryptedBytes = PerformCryptography(plainBytes, encryptor);
+                    return Convert.ToBase64String(encryptedBytes);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Decrypts the specified cipher text using DES in ECB mode.<br></br>
+        /// 在ECB模式下使用DES解密指定的密文。
+        /// </summary>
+        /// <param name="cipherTextBase64">The encrypted text.<br></br>被加密的文本。</param>
+        /// <param name="key">The encryption key as a string. It should be 8 bytes long for DES.<br></br>加密密钥为字符串。对于DES，它应该是8字节长。</param>
+        /// <returns>The decrypted plain text.|解密后的纯文本。</returns>
+        public static string DecryptString(string cipherTextBase64, string key)
+        {
+            using (System.Security.Cryptography.DES des = System.Security.Cryptography.DES.Create())
+            {
+                des.Mode = CipherMode.ECB;
+                des.Padding = PaddingMode.PKCS7;
+
+                using (ICryptoTransform decryptor = des.CreateDecryptor(Encoding.UTF8.GetBytes(key), null))
+                {
+                    // Convert Base64 string to byte array
+                    byte[] cipherBytes = Convert.FromBase64String(cipherTextBase64);
+                    // Perform decryption
+                    byte[] plainBytes = PerformCryptography(cipherBytes, decryptor);
+                    // Convert byte array to string
+                    return Encoding.UTF8.GetString(plainBytes);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Encrypts the specified plain text using DES in ECB mode.<br></br>
+        /// 使用DES以ECB方式加密指定的明文。
+        /// </summary>
+        /// <param name="plainText">The plain text to encrypt.<br></br>要加密的纯文本。</param>
+        /// <param name="key">The encryption key as a string. It should be 8 bytes long for DES.<br></br>加密密钥为字符串。对于DES，它应该是8字节长。</param>
+        /// <returns>The encrypted text as a byte array.|加密文本作为字节数组。</returns>
+        public static byte[] EncryptStringToBytes(string plainText, string key)
+        {
+            using (System.Security.Cryptography.DES des = System.Security.Cryptography.DES.Create())
+            {
+                des.Mode = CipherMode.ECB;
+                des.Padding = PaddingMode.PKCS7;
+
+                using (ICryptoTransform encryptor = des.CreateEncryptor(Encoding.UTF8.GetBytes(key), null))
+                {
+                    byte[] plainBytes = Encoding.UTF8.GetBytes(plainText);
+                    return PerformCryptography(plainBytes, encryptor);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Decrypts the specified cipher text using DES in ECB mode.<br></br>
+        /// 在ECB模式下使用DES解密指定的密文。
+        /// </summary>
+        /// <param name="cipherText">The encrypted text as a byte array.<br></br>加密文本作为字节数组。</param>
+        /// <param name="key">The encryption key as a string. It should be 8 bytes long for DES.<br></br>加密密钥为字符串。对于DES，它应该是8字节长。</param>
+        /// <returns>The decrypted plain text.|解密后的纯文本。</returns>
+        public static string DecryptBytesToString(byte[] cipherText, string key)
+        {
+            using (System.Security.Cryptography.DES des = System.Security.Cryptography.DES.Create())
+            {
+                des.Mode = CipherMode.ECB;
+                des.Padding = PaddingMode.PKCS7;
+
+                using (ICryptoTransform decryptor = des.CreateDecryptor(Encoding.UTF8.GetBytes(key), null))
+                {
+                    byte[] plainBytes = PerformCryptography(cipherText, decryptor);
+                    return Encoding.UTF8.GetString(plainBytes);
                 }
             }
         }
