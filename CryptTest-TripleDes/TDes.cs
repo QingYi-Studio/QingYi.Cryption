@@ -45,6 +45,12 @@ namespace CryptTest_TripleDes
             part3 = Encoding.UTF8.GetString(bytes, 16, 8);
         }
 
+        /// <summary>
+        /// Execute CBC encryption mode.<br></br>
+        /// 执行CBC加密模式。
+        /// </summary>
+        /// <param name="text">Text that needs to be encrypted.<br></br>需要加密的文本。</param>
+        /// <returns>Encrypted text<br></br>加密的文本</returns>
         public string CBCEncrypt(string text)
         {
             string originText = text;
@@ -55,6 +61,12 @@ namespace CryptTest_TripleDes
             return encryptText3;
         }
 
+        /// <summary>
+        /// Execute CBC decryption mode.<br></br>
+        /// 执行CBC解密模式。
+        /// </summary>
+        /// <param name="text">Text that needs to be decrypted.<br></br>需要解密的文本。</param>
+        /// <returns>Decrypted text<br></br>解密的文本</returns>
         public string CBCDecrypt(string text)
         {
             string encryptText = text;
