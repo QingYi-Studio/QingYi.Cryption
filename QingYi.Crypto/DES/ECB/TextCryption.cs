@@ -9,7 +9,7 @@ namespace DES.ECB
     /// Provides methods for encrypting and decrypting text using DES in ECB mode.<br></br>
     /// 提供在ECB模式下使用DES加密和解密文本的方法。
     /// </summary>
-    public class DesEcbTextCryption
+    public class DesEcbTextCrypto
     {
         private readonly byte[] _key;
 
@@ -19,7 +19,7 @@ namespace DES.ECB
         /// </summary>
         /// <param name="key">The key used for encryption and decryption. It must be 8 bytes long.<br></br>用于加密和解密的密钥。长度必须为8字节。</param>
         /// <exception cref="ArgumentException">Thrown when the key length is not 8 bytes.|当密钥长度不是8字节时抛出。</exception>
-        public DesEcbTextCryption(string key)
+        public DesEcbTextCrypto(string key)
         {
             if (key.Length != 8)
             {
