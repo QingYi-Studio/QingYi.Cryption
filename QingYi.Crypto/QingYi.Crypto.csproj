@@ -4,7 +4,7 @@
     <TargetFrameworks>netstandard2.1;net6.0;net7.0;net8.0;net6.0-windows;net7.0-windows;net8.0-windows</TargetFrameworks>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <Title>QingYi.Cryption</Title>
-    <Version>2.1.0-beta3</Version>
+    <Version>2.1.0-beta4</Version>
     <Authors>QingYi-Studio</Authors>
     <Description>A simple library that can be quickly encrypted and decrypted, based on native C#.
 For business please send Issue or contact us directly.</Description>
@@ -14,7 +14,7 @@ For business please send Issue or contact us directly.</Description>
     <PackageTags>Crypto;Des;XOR;Morse;MessageDigest</PackageTags>
     <PackageIcon>use.png</PackageIcon>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageReleaseNotes>support md4</PackageReleaseNotes>
+    <PackageReleaseNotes>support md5</PackageReleaseNotes>
     <ProduceReferenceAssembly>True</ProduceReferenceAssembly>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
   </PropertyGroup>
@@ -45,7 +45,6 @@ For business please send Issue or contact us directly.</Description>
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="MessageDigest\MD5\" />
     <Folder Include="RC\V2\" />
     <Folder Include="RC\V4\" />
     <Folder Include="RC\V5\" />
