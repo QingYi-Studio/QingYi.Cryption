@@ -26,7 +26,7 @@ namespace DES.CBC
         /// DES encryption requires the key and IV to be exactly 8 bytes each. Ensure that both the key and IV are properly padded or truncated to 8 bytes as needed. The input file must exist, and the output file will be created or overwritten.<br></br>
         /// DES加密要求密钥和IV各为8字节。确保键和IV都被适当填充或根据需要截断为8字节。输入文件必须存在，输出文件将被创建或覆盖。
         /// </remarks>
-        public static void Encrypt(string inputFile, string outputFile, string key, string iv)
+        public static void EncryptFile(string inputFile, string outputFile, string key, string iv)
         {
             byte[] keyBytes = Encoding.UTF8.GetBytes(key);
             byte[] ivBytes = Encoding.UTF8.GetBytes(iv);
@@ -67,7 +67,7 @@ namespace DES.CBC
         /// DES decryption requires the key and IV to be exactly 8 bytes each. Ensure that both the key and IV are properly padded or truncated to 8 bytes as needed. The input file must exist, and the output file will be created or overwritten.<br></br>
         /// DES解密要求密钥和IV各为8字节。确保键和IV都被适当填充或根据需要截断为8字节。输入文件必须存在，输出文件将被创建或覆盖。
         /// </remarks>
-        public static void Decrypt(string inputFile, string outputFile, string key, string iv)
+        public static void DecryptFile(string inputFile, string outputFile, string key, string iv)
         {
             byte[] keyBytes = Encoding.UTF8.GetBytes(key);
             byte[] ivBytes = Encoding.UTF8.GetBytes(iv);
