@@ -1,13 +1,11 @@
-﻿using System.Text;
-
-namespace DES.TextCryption
+﻿namespace DES.TextCryption
 {
     public class ECBTT
     {
         public static void TCode()
         {
             string originalText = "Hello, World!";
-            byte[] key = Encoding.UTF8.GetBytes("12345678"); // DES key must be 8 bytes long
+            string key = "12345678";
 
             // 创建 DesEncryption 实例
             ECB desEncryption = new ECB(key);
