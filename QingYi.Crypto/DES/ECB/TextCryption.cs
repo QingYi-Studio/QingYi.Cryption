@@ -9,13 +9,13 @@ namespace DES.ECB
     {
         private readonly byte[] _key;
 
-        public DesEcbTextCryption(byte[] key)
+        public DesEcbTextCryption(string key)
         {
             if (key.Length != 8)
             {
                 throw new ArgumentException("DES key must be 8 bytes long");
             }
-            _key = key;
+            _key = Encoding.UTF8.GetBytes(key);
         }
 
         public byte[] Encrypt(string plainText)
