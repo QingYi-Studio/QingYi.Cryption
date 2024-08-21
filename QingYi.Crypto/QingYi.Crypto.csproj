@@ -50,7 +50,6 @@ For business please send Issue or contact us directly.</Description>
     <Folder Include="SHA\SHA2\" />
     <Folder Include="SHA\SHA3\" />
     <Folder Include="SM\V1\" />
-    <Folder Include="SM\V2\" />
     <Folder Include="SM\V3\" />
     <Folder Include="SM\V4\" />
     <Folder Include="SM\V7\" />
@@ -63,6 +62,7 @@ For business please send Issue or contact us directly.</Description>
     <Folder Include="HMAC\" />
     <Folder Include="OMAC\" />
     <Folder Include="CBC-MAC\" />
+    <Folder Include="SM\V2\" />
   </ItemGroup>
 
   <ItemGroup>
