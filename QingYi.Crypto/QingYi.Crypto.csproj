@@ -60,8 +60,9 @@ For business please send Issue or contact us directly.</Description>
     <Folder Include="BlowFish\" />
     <Folder Include="Rabbit\" />
     <Folder Include="RSA\" />
-    <Folder Include="MAC\" />
     <Folder Include="HMAC\" />
+    <Folder Include="OMAC\" />
+    <Folder Include="CBC-MAC\" />
   </ItemGroup>
 
   <ItemGroup>
