@@ -3,8 +3,8 @@
   <PropertyGroup>
     <TargetFrameworks>netstandard2.1;net6.0;net7.0;net8.0;net6.0-windows;net7.0-windows;net8.0-windows;netcoreapp3.1</TargetFrameworks>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <Title>QingYi.Crypo</Title>
-    <Version>2.2.0</Version>
+    <Title>QingYi.Crypto</Title>
+    <Version>2.3.0-beta1</Version>
     <Authors>QingYi-Studio</Authors>
     <Description>A simple library that can be quickly encrypted and decrypted, based on native C#.
 For business please send Issue or contact us directly.</Description>
@@ -14,7 +14,7 @@ For business please send Issue or contact us directly.</Description>
     <PackageTags>Crypto;DES;XOR;Morse;MessageDigest</PackageTags>
     <PackageIcon>use.png</PackageIcon>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageReleaseNotes>Greatly optimize the use of DES and 3DES</PackageReleaseNotes>
+    <PackageReleaseNotes>Optimize XOR encryption and Caesar encryption.</PackageReleaseNotes>
     <ProduceReferenceAssembly>True</ProduceReferenceAssembly>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
   </PropertyGroup>
@@ -50,7 +50,6 @@ For business please send Issue or contact us directly.</Description>
     <Folder Include="SHA\SHA2\" />
     <Folder Include="SHA\SHA3\" />
     <Folder Include="SM\V1\" />
-    <Folder Include="SM\V2\" />
     <Folder Include="SM\V3\" />
     <Folder Include="SM\V4\" />
     <Folder Include="SM\V7\" />
@@ -60,8 +59,10 @@ For business please send Issue or contact us directly.</Description>
     <Folder Include="BlowFish\" />
     <Folder Include="Rabbit\" />
     <Folder Include="RSA\" />
-    <Folder Include="MAC\" />
     <Folder Include="HMAC\" />
+    <Folder Include="OMAC\" />
+    <Folder Include="CBC-MAC\" />
+    <Folder Include="SM\V2\" />
   </ItemGroup>
 
   <ItemGroup>
