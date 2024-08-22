@@ -11,10 +11,10 @@ For business please send Issue or contact us directly.</Description>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/QingYi-Studio/QingYi.Cryption</RepositoryUrl>
     <PackageProjectUrl>https://github.com/QingYi-Studio/QingYi.Cryption</PackageProjectUrl>
-    <PackageTags>Crypto;DES;XOR;Morse;MessageDigest</PackageTags>
+    <PackageTags>Crypto;DES;XOR;Morse;MessageDigest;TripleDES</PackageTags>
     <PackageIcon>use.png</PackageIcon>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageReleaseNotes>Optimize XOR encryption and Caesar encryption.</PackageReleaseNotes>
+    <PackageReleaseNotes>Supports 3DES file encryption.</PackageReleaseNotes>
     <ProduceReferenceAssembly>True</ProduceReferenceAssembly>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
   </PropertyGroup>
