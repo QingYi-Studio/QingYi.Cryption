@@ -5,10 +5,10 @@ using System.Text;
 namespace TripleDES
 {
     /// <summary>
-    /// 3DES string crypto. Based on the DES module of this library.<br></br>
-    /// 3DES字符串加密。基于本库的DES模块。
+    /// 3DES file crypto. Based on the DES module of this library.<br></br>
+    /// 3DES文件加密。基于本库的DES模块。
     /// </summary>
-    public class TripleDesStringCrypto
+    public class TripleDesFileCrypto
     {
         private readonly string Key;
         private readonly string IV;
@@ -20,7 +20,7 @@ namespace TripleDES
         /// <param name="key">The encryption key as a string. It should be 8 bytes long for DES.<br></br>加密密钥为字符串。对于DES，它应该是8字节长。</param>
         /// <param name="iv">The initialization vector (IV) as a string. It should be 8 bytes long for DES.<br></br>初始化向量(IV)为字符串。对于DES，它应该是8字节长。</param>
         /// <exception cref="ArgumentException">Thrown when the key or IV is not the correct length (8 bytes).|当key或IV不是正确的长度(8字节)时抛出。</exception>
-        public TripleDesStringCrypto(string key, string iv)
+        public TripleDesFileCrypto(string key, string iv)
         {
             if (key.Length != 24)
                 throw new ArgumentException("Key must be 24 bytes long.");
@@ -57,67 +57,59 @@ namespace TripleDES
         }
 
         /// <summary>
-        /// Execute CBC string encryption mode.<br></br>
-        /// 执行CBC字符串加密模式。
+        /// Execute CBC file encryption mode.<br></br>
+        /// 执行CBC文件加密模式。
         /// </summary>
-        /// <param name="text">Text that needs to be encrypted.<br></br>需要加密的文本。</param>
-        /// <returns>Encrypted text<br></br>加密的文本</returns>
-        public string CBCEncryptString(string text)
+        /// <param name="filePath"></param>
+        /// <param name="outputPath"></param>
+        public void CBCEncryptFile(string filePath, string outputPath)
         {
-            string originText = text;
             GetKey(out string part1, out string part2, out string part3);
-            string encryptText1 = CBC.EncryptString(originText, part1, IV);
-            string encryptText2 = CBC.EncryptString(encryptText1, part2, IV);
-            string encryptText3 = CBC.EncryptString(encryptText2, part3, IV);
-            return encryptText3;
+            byte[] encrypt1 = CBC.EncryptFileToBytes(filePath, part1, IV);
+            byte[] encrypt2 = CBC.EncryptBytes(encrypt1, part2, IV);
+            CBC.EncryptBytesToFile(encrypt2, outputPath, part3, IV);
         }
 
         /// <summary>
-        /// Execute CBC string decryption mode.<br></br>
-        /// 执行CBC字符串解密模式。
+        /// Execute CBC file decryption mode.<br></br>
+        /// 执行CBC文件解密模式。
         /// </summary>
-        /// <param name="text">Text that needs to be decrypted.<br></br>需要解密的文本。</param>
-        /// <returns>Decrypted text<br></br>解密的文本</returns>
-        public string CBCDecryptString(string text)
+        /// <param name="filePath"></param>
+        /// <param name="outputPath"></param>
+        public void CBCDecryptFile(string filePath, string outputPath)
         {
-            string encryptText = text;
             GetKey(out string part1, out string part2, out string part3);
-            string decryptText1 = CBC.DecryptString(encryptText, part3, IV);
-            string decryptText2 = CBC.DecryptString(decryptText1, part2, IV);
-            string decryptText3 = CBC.DecryptString(decryptText2, part1, IV);
-            return decryptText3;
+            byte[] decrypt1 = CBC.DecryptFileToBytes(filePath, part3, IV);
+            byte[] decrypt2 = CBC.DecryptBytes(decrypt1, part2, IV);
+            CBC.DecryptBytesToFile(decrypt2, outputPath, part1, IV);
         }
 
         /// <summary>
-        /// Execute ECB string encryption mode.<br></br>
-        /// 执行ECB字符串加密模式。
+        /// Execute ECB file encryption mode.<br></br>
+        /// 执行ECB文件加密模式。
         /// </summary>
-        /// <param name="text">Text that needs to be encrypted.<br></br>需要加密的文本。</param>
-        /// <returns>Encrypted text<br></br>加密的文本</returns>
-        public string ECBEncryptString(string text)
+        /// <param name="filePath"></param>
+        /// <param name="outputPath"></param>
+        public void ECBEncryptFile(string filePath, string outputPath)
         {
             GetKey(out string part1, out string part2, out string part3);
-            string originText = text;
-            string encryptText1 = ECB.EncryptString(originText, part1);
-            string encryptText2 = ECB.EncryptString(encryptText1, part2);
-            string encryptText3 = ECB.EncryptString(encryptText2, part3);
-            return encryptText3;
+            byte[] encrypt1 = ECB.EncryptFileToBytes(filePath, part1);
+            byte[] encrypt2 = ECB.EncryptBytes(encrypt1, part2);
+            ECB.EncryptBytesToFile(encrypt2, outputPath, part3);
         }
 
         /// <summary>
-        /// Execute ECB string decryption mode.<br></br>
-        /// 执行ECB字符串解密模式。
+        /// Execute ECB file decryption mode.<br></br>
+        /// 执行ECB文件解密模式。
         /// </summary>
-        /// <param name="text">Text that needs to be decrypted.<br></br>需要解密的文本。</param>
-        /// <returns>Decrypted text<br></br>解密的文本</returns>
-        public string ECBDecryptString(string text)
+        /// <param name="filePath"></param>
+        /// <param name="outputPath"></param>
+        public void ECBDecryptFile(string filePath, string outputPath)
         {
             GetKey(out string part1, out string part2, out string part3);
-            string encryptText = text;
-            string decryptText1 = ECB.DecryptString(encryptText, part3);
-            string decryptText2 = ECB.DecryptString(decryptText1, part2);
-            string decryptText3 = ECB.DecryptString(decryptText2, part1);
-            return decryptText3;
+            byte[] decrypt1 = ECB.DecryptFileToBytes(filePath, part3);
+            byte[] decrypt2 = ECB.DecryptBytes(decrypt1, part2);
+            ECB.DecryptBytesToFile(decrypt2, outputPath, part1);
         }
     }
 }
