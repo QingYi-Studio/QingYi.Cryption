@@ -14,7 +14,7 @@ For business please send Issue or contact us directly.</Description>
     <PackageTags>Crypto;DES;XOR;Morse;MessageDigest;TripleDES</PackageTags>
     <PackageIcon>use.png</PackageIcon>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageReleaseNotes>Reconstructed 3DES.</PackageReleaseNotes>
+    <PackageReleaseNotes>AES support(only cbc mode pkcs7).</PackageReleaseNotes>
     <ProduceReferenceAssembly>True</ProduceReferenceAssembly>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
   </PropertyGroup>
@@ -55,7 +55,6 @@ For business please send Issue or contact us directly.</Description>
     <Folder Include="SM\V7\" />
     <Folder Include="SM\V9\" />
     <Folder Include="SM\ZUC\" />
-    <Folder Include="Aes\" />
     <Folder Include="BlowFish\" />
     <Folder Include="Rabbit\" />
     <Folder Include="RSA\" />
