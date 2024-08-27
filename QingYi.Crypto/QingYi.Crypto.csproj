@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;netstandard2.1;net6.0;net7.0;net8.0;net6.0-windows;net7.0-windows;net8.0-windows;netcoreapp2.2;netcoreapp3.1</TargetFrameworks>
@@ -14,7 +14,7 @@ For business please send Issue or contact us directly.</Description>
     <PackageTags>Crypto;DES;XOR;Morse;MessageDigest;TripleDES</PackageTags>
     <PackageIcon>use.png</PackageIcon>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageReleaseNotes>AES support(only cbc mode pkcs7).</PackageReleaseNotes>
+    <PackageReleaseNotes>The filling algorithm of the CBC encryption mode in AES encryption mode is PKCS7..</PackageReleaseNotes>
     <ProduceReferenceAssembly>True</ProduceReferenceAssembly>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
   </PropertyGroup>
