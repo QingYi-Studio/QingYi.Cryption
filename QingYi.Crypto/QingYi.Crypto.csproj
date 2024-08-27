@@ -42,6 +42,10 @@ For business please send Issue or contact us directly.</Description>
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="AES\ECB\" />
+    <Folder Include="AES\CFB\" />
+    <Folder Include="AES\OFB\" />
+    <Folder Include="AES\CTS\" />
     <Folder Include="RC\V2\" />
     <Folder Include="RC\V4\" />
     <Folder Include="RC\V5\" />
