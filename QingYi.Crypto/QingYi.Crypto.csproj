@@ -4,17 +4,18 @@
     <TargetFrameworks>netstandard2.0;netstandard2.1;net6.0;net7.0;net8.0;net6.0-windows;net7.0-windows;net8.0-windows;netcoreapp2.2;netcoreapp3.1</TargetFrameworks>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <Title>QingYi.Crypto</Title>
-    <Version>2.4.0-alpha2</Version>
+    <Version>2.4.0-beta1</Version>
     <Authors>QingYi-Studio</Authors>
     <Description>A simple library that can be quickly encrypted and decrypted, based on native C#.
 For business please send Issue or contact us directly.</Description>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/QingYi-Studio/QingYi.Cryption</RepositoryUrl>
     <PackageProjectUrl>https://github.com/QingYi-Studio/QingYi.Cryption</PackageProjectUrl>
-    <PackageTags>Crypto;DES;XOR;Morse;MessageDigest;TripleDES</PackageTags>
+    <PackageTags>Crypto;DES;XOR;Morse;MessageDigest;TripleDES;AES</PackageTags>
     <PackageIcon>use.png</PackageIcon>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageReleaseNotes>The filling algorithm of the CBC encryption mode in AES encryption mode is PKCS7..</PackageReleaseNotes>
+    <PackageReleaseNotes>The CBC mode is complete.
+All fill modes are supported.</PackageReleaseNotes>
     <ProduceReferenceAssembly>True</ProduceReferenceAssembly>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
   </PropertyGroup>
