@@ -1,6 +1,6 @@
 # QingYi.Crypto
 
-[![NuGet](https://img.shields.io/nuget/dt/QingYi.Crypto.svg)](https://www.nuget.org/packagesQingYi.Crypto) [![NuGet](https://img.shields.io/nuget/vpre/QingYi.Crypto.svg)](https://www.nuget.org/packages/QingYi.Crypto)
+[![NuGet](https://img.shields.io/nuget/dt/QingYi.Crypto.svg)](https://www.nuget.org/packages/QingYi.Crypto) [![NuGet](https://img.shields.io/nuget/vpre/QingYi.Crypto.svg)](https://www.nuget.org/packages/QingYi.Crypto)
 
 A simple library that can be quickly encrypted and decrypted, based on native C#.
 
