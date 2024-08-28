@@ -1,9 +1,9 @@
 ﻿namespace AES
 {
-    internal class OFB
+    internal class CTS
     {
         // example code notfound
-        // why nobody use ofb mode?
+        // why nobody use ofb and cts mode?
         // there's no official documentation from microsoft
         // fuck
     }
