@@ -66,6 +66,7 @@ For business please send Issue or contact us directly.</Description>
     <Folder Include="OMAC\" />
     <Folder Include="CBC-MAC\" />
     <Folder Include="SM\V2\" />
+    <Folder Include="Codec\" />
   </ItemGroup>
 
   <ItemGroup>
