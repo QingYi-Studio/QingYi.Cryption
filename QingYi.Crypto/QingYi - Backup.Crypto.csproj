@@ -1,0 +1,80 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;netstandard2.1;net6.0;net7.0;net8.0;net6.0-windows;net7.0-windows;net8.0-windows;netcoreapp2.2;netcoreapp3.1</TargetFrameworks>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <Title>QingYi.Crypto</Title>
+    <Version>2.4.0-beta2</Version>
+    <Authors>QingYi-Studio</Authors>
+    <Description>A simple library that can be quickly encrypted and decrypted, based on native C#.
+For business please send Issue or contact us directly.</Description>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/QingYi-Studio/QingYi.Cryption</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/QingYi-Studio/QingYi.Cryption</PackageProjectUrl>
+    <PackageTags>Crypto;DES;XOR;Morse;MessageDigest;TripleDES;AES</PackageTags>
+    <PackageIcon>use.png</PackageIcon>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageReleaseNotes></PackageReleaseNotes>
+    <ProduceReferenceAssembly>True</ProduceReferenceAssembly>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="AES\mode_diff.md" />
+    <None Remove="DES\mode_diff.md" />
+    <None Remove="Morse\custom-dictionary-example.md" />
+    <None Remove="readme.md" />
+    <None Remove="use.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="AES\mode_diff.md" />
+    <Content Include="DES\mode_diff.md">
+      <Pack>True</Pack>
+    </Content>
+    <Content Include="Morse\custom-dictionary-example.md" />
+    <Content Include="README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </Content>
+    <Content Include="use.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="AES\ECB\" />
+    <Folder Include="AES\CFB\" />
+    <Folder Include="AES\OFB\" />
+    <Folder Include="AES\CTS\" />
+    <Folder Include="RC\V2\" />
+    <Folder Include="RC\V4\" />
+    <Folder Include="RC\V5\" />
+    <Folder Include="RC\V6\" />
+    <Folder Include="SHA\SHA1\" />
+    <Folder Include="SHA\SHA2\" />
+    <Folder Include="SHA\SHA3\" />
+    <Folder Include="SM\V1\" />
+    <Folder Include="SM\V3\" />
+    <Folder Include="SM\V4\" />
+    <Folder Include="SM\V7\" />
+    <Folder Include="SM\V9\" />
+    <Folder Include="SM\ZUC\" />
+    <Folder Include="BlowFish\" />
+    <Folder Include="Rabbit\" />
+    <Folder Include="RSA\" />
+    <Folder Include="HMAC\" />
+    <Folder Include="OMAC\" />
+    <Folder Include="CBC-MAC\" />
+    <Folder Include="SM\V2\" />
+    <Folder Include="Codec\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+</Project>
