@@ -11,4 +11,10 @@
     <ProjectReference Include="..\QingYi.Crypto\QingYi.Crypto.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="test.abcdefg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

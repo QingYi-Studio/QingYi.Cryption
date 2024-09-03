@@ -9,6 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QingYi.Crypto", "QingYi.Cry
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "解决方案项", "解决方案项", "{F7635140-0BE0-4B5B-98D1-BD309DC422D1}"
 	ProjectSection(SolutionItems) = preProject
+		new-branch.bat = new-branch.bat
 		README.md = README.md
 	EndProjectSection
 EndProject
