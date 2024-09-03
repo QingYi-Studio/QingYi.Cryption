@@ -19,6 +19,10 @@ namespace AES
         /// The hexadecimal string to convert.<br></br>
         /// 要转换的十六进制字符串。
         /// </param>
+        /// <param name="requiredLength">
+        /// The desired byte length.<br></br>
+        /// 所需的字节长度。
+        /// </param>
         /// <returns>
         /// The corresponding byte array.<br></br>
         /// 对应的字节数组。
@@ -27,22 +31,44 @@ namespace AES
         /// Thrown when the length of the <paramref name="hex"/> string is not an even number.<br></br>
         /// 当<paramref name="hex"/>字符串的长度不是偶数时抛出。
         /// </exception>
-        private static byte[] FormattingKeyIV(string hex)
+        private static byte[] FormattingKeyIV(string hex, int requiredLength)
         {
-            // 获取十六进制字符串的字符数
-            int numberChars = hex.Length;
+            if (string.IsNullOrWhiteSpace(hex))
+            {
+                throw new ArgumentException("Hex string cannot be null or empty.", nameof(hex));
+            }
+
+            // 移除任何可能的空格
+            hex = hex.Replace(" ", string.Empty);
+
+            // 确保十六进制字符串的长度是偶数
+            if (hex.Length % 2 != 0)
+            {
+                throw new ArgumentException("Hex string must have an even length.", nameof(hex));
+            }
+
+            // 截断或补零
+            if (hex.Length > requiredLength * 2)
+            {
+                // 如果十六进制字符串太长，则截断
+                hex = hex.Substring(0, requiredLength * 2);
+            }
+            else if (hex.Length < requiredLength * 2)
+            {
+                // 如果十六进制字符串太短，则在前面补零
+                hex = hex.PadLeft(requiredLength * 2, '0');
+            }
 
             // 创建一个字节数组来存储转换后的结果
-            byte[] bytes = new byte[numberChars / 2];
+            byte[] bytes = new byte[requiredLength];
 
             // 遍历十六进制字符串，每两位字符转换为一个字节
-            for (int i = 0; i < numberChars; i += 2)
+            for (int i = 0; i < hex.Length; i += 2)
             {
                 // 从十六进制字符串的指定位置提取两位字符，并将其转换为一个字节
                 bytes[i / 2] = Convert.ToByte(hex.Substring(i, 2), 16);
             }
 
-            // 返回转换后的字节数组
             return bytes;
         }
 
@@ -82,44 +108,28 @@ namespace AES
             /// </exception>
             public static string EncryptString(string plainText, string keyHex, string ivHex)
             {
-                // 检查明文是否为null
                 if (plainText == null) throw new ArgumentNullException(nameof(plainText));
 
-                // 检查密钥是否为有效的64个十六进制字符（即32字节）
-                if (string.IsNullOrEmpty(keyHex) || keyHex.Length != 64)
-                    throw new ArgumentException("Key must be 64 hex characters.", nameof(keyHex));
-
-                // 检查初始化向量（IV）是否为有效的32个十六进制字符（即16字节）
-                if (string.IsNullOrEmpty(ivHex) || ivHex.Length != 32)
-                    throw new ArgumentException("IV must be 32 hex characters.", nameof(ivHex));
-
                 // 将十六进制格式的密钥和IV转换为字节数组
-                byte[] key = FormattingKeyIV(keyHex);
-                byte[] iv = FormattingKeyIV(ivHex);
+                byte[] key = FormattingKeyIV(keyHex, 32); // 32 字节密钥对应 AES-256
+                byte[] iv = FormattingKeyIV(ivHex, 16);   // 16 字节 IV 对应 AES
 
                 using (Aes aes = Aes.Create())
                 {
-                    // 设置AES加密算法的密钥和初始化向量
                     aes.Key = key;
                     aes.IV = iv;
-                    aes.Mode = CipherMode.CBC; // 使用CBC模式
-                    aes.Padding = PaddingMode.PKCS7; // 使用PKCS7填充模式
+                    aes.Mode = CipherMode.CBC;
+                    aes.Padding = PaddingMode.PKCS7;
 
-                    // 创建加密转换器
-                    ICryptoTransform encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
-
+                    using (ICryptoTransform encryptor = aes.CreateEncryptor(aes.Key, aes.IV))
                     using (MemoryStream ms = new MemoryStream())
+                    using (CryptoStream cs = new CryptoStream(ms, encryptor, CryptoStreamMode.Write))
+                    using (StreamWriter sw = new StreamWriter(cs))
                     {
-                        // 创建CryptoStream以将数据写入内存流
-                        using (CryptoStream cs = new CryptoStream(ms, encryptor, CryptoStreamMode.Write))
-                        {
-                            // 使用StreamWriter写入明文数据
-                            using (StreamWriter sw = new StreamWriter(cs))
-                            {
-                                sw.Write(plainText);
-                            }
-                        }
-                        // 将加密后的数据转换为Base64字符串并返回
+                        // 写入明文数据并确保所有数据都被写入
+                        sw.Write(plainText);
+                        sw.Flush(); // 确保所有数据被写入到 CryptoStream
+                        cs.FlushFinalBlock(); // 确保完成加密操作
                         return Convert.ToBase64String(ms.ToArray());
                     }
                 }
@@ -134,11 +144,11 @@ namespace AES
             /// base64编码的加密文本。
             /// </param>
             /// <param name="keyHex">
-            /// The hexadecimal representation of the encryption key (64 hex characters for 32 bytes).<br></br>
+            /// The hexadecimal representation of the encryption key.<br></br>
             /// 加密密钥的十六进制表示形式(64个十六进制字符，32字节)。
             /// </param>
             /// <param name="ivHex">
-            /// The hexadecimal representation of the initialization vector (32 hex characters for 16 bytes).<br></br>
+            /// The hexadecimal representation of the initialization vector.<br></br>
             /// 初始化向量的十六进制表示(32个十六进制字符表示16字节)。
             /// </param>
             /// <returns>
@@ -158,17 +168,9 @@ namespace AES
                 // 检查加密文本是否为空
                 if (cipherText == null) throw new ArgumentNullException(nameof(cipherText));
 
-                // 验证密钥的长度是否为64个十六进制字符，即32字节
-                if (string.IsNullOrEmpty(keyHex) || keyHex.Length != 64)
-                    throw new ArgumentException("Key must be 64 hex characters.", nameof(keyHex));
-
-                // 验证IV的长度是否为32个十六进制字符，即16字节
-                if (string.IsNullOrEmpty(ivHex) || ivHex.Length != 32)
-                    throw new ArgumentException("IV must be 32 hex characters.", nameof(ivHex));
-
                 // 将十六进制表示的密钥和IV转换为字节数组
-                byte[] key = FormattingKeyIV(keyHex);
-                byte[] iv = FormattingKeyIV(ivHex);
+                byte[] key = FormattingKeyIV(keyHex, 32);
+                byte[] iv = FormattingKeyIV(ivHex, 16);
 
                 // 创建Aes对象来执行解密
                 using (Aes aes = Aes.Create())
@@ -205,11 +207,11 @@ namespace AES
             /// 要加密的字节数组数据。
             /// </param>
             /// <param name="keyHex">
-            /// The hexadecimal representation of the encryption key (64 hex characters for 32 bytes).<br></br>
+            /// The hexadecimal representation of the encryption key.<br></br>
             /// 加密密钥的十六进制表示（32字节的64个十六进制字符）。
             /// </param>
             /// <param name="ivHex">
-            /// The hexadecimal representation of the initialization vector (32 hex characters for 16 bytes).<br></br>
+            /// The hexadecimal representation of the initialization vector.<br></br>
             /// 初始化向量的十六进制表示（16字节的32个十六进制字符）。
             /// </param>
             /// <returns>
@@ -227,8 +229,8 @@ namespace AES
             public static string EncryptBytesToString(byte[] data, string keyHex, string ivHex)
             {
                 // 将十六进制表示的密钥和IV转换为字节数组
-                byte[] key = FormattingKeyIV(keyHex);
-                byte[] iv = FormattingKeyIV(ivHex);
+                byte[] key = FormattingKeyIV(keyHex, 32);
+                byte[] iv = FormattingKeyIV(ivHex, 16);
 
                 using (Aes aes = Aes.Create())
                 {
@@ -263,11 +265,11 @@ namespace AES
             /// 要解密的Base64编码的加密字符串。
             /// </param>
             /// <param name="keyHex">
-            /// The hexadecimal representation of the decryption key (64 hex characters for 32 bytes).<br></br>
+            /// The hexadecimal representation of the decryption key.<br></br>
             /// 解密密钥的十六进制表示（32字节的64个十六进制字符）。
             /// </param>
             /// <param name="ivHex">
-            /// The hexadecimal representation of the initialization vector (32 hex characters for 16 bytes).<br></br>
+            /// The hexadecimal representation of the initialization vector.<br></br>
             /// 初始化向量的十六进制表示（16字节的32个十六进制字符）。
             /// </param>
             /// <returns>
@@ -285,8 +287,8 @@ namespace AES
             public static byte[] DecryptStringToBytes(string encryptedData, string keyHex, string ivHex)
             {
                 // 将十六进制表示的密钥和IV转换为字节数组
-                byte[] key = FormattingKeyIV(keyHex);
-                byte[] iv = FormattingKeyIV(ivHex);
+                byte[] key = FormattingKeyIV(keyHex, 32);
+                byte[] iv = FormattingKeyIV(ivHex, 16);
                 byte[] encryptedBytes = Convert.FromBase64String(encryptedData); // 从Base64字符串转换为字节数组
 
                 using (Aes aes = Aes.Create())
@@ -324,11 +326,11 @@ namespace AES
             /// 要加密的纯文本字符串。
             /// </param>
             /// <param name="keyHex">
-            /// The hexadecimal representation of the encryption key (64 hex characters for 32 bytes).<br></br>
+            /// The hexadecimal representation of the encryption key.<br></br>
             /// 加密密钥的十六进制表示（32字节的64个十六进制字符）。
             /// </param>
             /// <param name="ivHex">
-            /// The hexadecimal representation of the initialization vector (32 hex characters for 16 bytes).<br></br>
+            /// The hexadecimal representation of the initialization vector.<br></br>
             /// 初始化向量的十六进制表示（16字节的32个十六进制字符）。
             /// </param>
             /// <returns>
@@ -346,8 +348,8 @@ namespace AES
             public static byte[] EncryptStringToBytes(string plainText, string keyHex, string ivHex)
             {
                 // 将十六进制表示的密钥和IV转换为字节数组
-                byte[] key = FormattingKeyIV(keyHex);
-                byte[] iv = FormattingKeyIV(ivHex);
+                byte[] key = FormattingKeyIV(keyHex, 32);
+                byte[] iv = FormattingKeyIV(ivHex, 16);
 
                 using (Aes aes = Aes.Create())
                 {
@@ -384,11 +386,11 @@ namespace AES
             /// 要解密的加密数据字节数组。
             /// </param>
             /// <param name="keyHex">
-            /// The hexadecimal representation of the decryption key (64 hex characters for 32 bytes).<br></br>
+            /// The hexadecimal representation of the decryption key.<br></br>
             /// 解密密钥的十六进制表示（32字节的64个十六进制字符）。
             /// </param>
             /// <param name="ivHex">
-            /// The hexadecimal representation of the initialization vector (32 hex characters for 16 bytes).<br></br>
+            /// The hexadecimal representation of the initialization vector.<br></br>
             /// 初始化向量的十六进制表示（16字节的32个十六进制字符）。
             /// </param>
             /// <returns>
@@ -406,8 +408,8 @@ namespace AES
             public static string DecryptBytesToString(byte[] cipherBytes, string keyHex, string ivHex)
             {
                 // 将十六进制表示的密钥和IV转换为字节数组
-                byte[] key = FormattingKeyIV(keyHex);
-                byte[] iv = FormattingKeyIV(ivHex);
+                byte[] key = FormattingKeyIV(keyHex, 32);
+                byte[] iv = FormattingKeyIV(ivHex, 16);
 
                 using (Aes aes = Aes.Create())
                 {
@@ -448,11 +450,11 @@ namespace AES
             /// 加密数据将保存到的输出文件路径。
             /// </param>
             /// <param name="keyHex">
-            /// The hexadecimal representation of the encryption key (64 hex characters for 32 bytes).<br></br>
+            /// The hexadecimal representation of the encryption key.<br></br>
             /// 加密密钥的十六进制表示（32字节的64个十六进制字符）。
             /// </param>
             /// <param name="ivHex">
-            /// The hexadecimal representation of the initialization vector (32 hex characters for 16 bytes).<br></br>
+            /// The hexadecimal representation of the initialization vector.<br></br>
             /// 初始化向量的十六进制表示（16字节的32个十六进制字符）。
             /// </param>
             /// <exception cref="ArgumentNullException">
@@ -470,8 +472,8 @@ namespace AES
             public static void EncryptFile(string inputFilePath, string outputFilePath, string keyHex, string ivHex)
             {
                 // 将十六进制表示的密钥和IV转换为字节数组
-                byte[] key = FormattingKeyIV(keyHex);
-                byte[] iv = FormattingKeyIV(ivHex);
+                byte[] key = FormattingKeyIV(keyHex, 32);
+                byte[] iv = FormattingKeyIV(ivHex, 16);
 
                 using (Aes aes = Aes.Create())
                 {
@@ -505,11 +507,11 @@ namespace AES
             /// 解密数据将保存到的输出文件路径。
             /// </param>
             /// <param name="keyHex">
-            /// The hexadecimal representation of the decryption key (64 hex characters for 32 bytes).<br></br>
+            /// The hexadecimal representation of the decryption key.<br></br>
             /// 解密密钥的十六进制表示（32字节的64个十六进制字符）。
             /// </param>
             /// <param name="ivHex">
-            /// The hexadecimal representation of the initialization vector (32 hex characters for 16 bytes).<br></br>
+            /// The hexadecimal representation of the initialization vector.<br></br>
             /// 初始化向量的十六进制表示（16字节的32个十六进制字符）。
             /// </param>
             /// <exception cref="ArgumentNullException">
@@ -527,8 +529,8 @@ namespace AES
             public static void DecryptFile(string inputFilePath, string outputFilePath, string keyHex, string ivHex)
             {
                 // 将十六进制表示的密钥和IV转换为字节数组
-                byte[] key = FormattingKeyIV(keyHex);
-                byte[] iv = FormattingKeyIV(ivHex);
+                byte[] key = FormattingKeyIV(keyHex, 32);
+                byte[] iv = FormattingKeyIV(ivHex, 16);
 
                 using (Aes aes = Aes.Create())
                 {
@@ -558,11 +560,11 @@ namespace AES
             /// 要加密的字节数组。
             /// </param>
             /// <param name="keyHex">
-            /// The hexadecimal representation of the encryption key (64 hex characters for 32 bytes).<br></br>
+            /// The hexadecimal representation of the encryption key.<br></br>
             /// 加密密钥的十六进制表示（32字节的64个十六进制字符）。
             /// </param>
             /// <param name="ivHex">
-            /// The hexadecimal representation of the initialization vector (32 hex characters for 16 bytes).<br></br>
+            /// The hexadecimal representation of the initialization vector.<br></br>
             /// 初始化向量的十六进制表示（16字节的32个十六进制字符）。
             /// </param>
             /// <returns>
@@ -580,8 +582,8 @@ namespace AES
             public static byte[] EncryptBytes(byte[] data, string keyHex, string ivHex)
             {
                 // 将十六进制表示的密钥和IV转换为字节数组
-                byte[] key = FormattingKeyIV(keyHex);
-                byte[] iv = FormattingKeyIV(ivHex);
+                byte[] key = FormattingKeyIV(keyHex, 32);
+                byte[] iv = FormattingKeyIV(ivHex, 16);
 
                 using (Aes aes = Aes.Create())
                 {
@@ -614,11 +616,11 @@ namespace AES
             /// 要解密的字节数组。
             /// </param>
             /// <param name="keyHex">
-            /// The hexadecimal representation of the decryption key (64 hex characters for 32 bytes).<br></br>
+            /// The hexadecimal representation of the decryption key.<br></br>
             /// 解密密钥的十六进制表示（32字节的64个十六进制字符）。
             /// </param>
             /// <param name="ivHex">
-            /// The hexadecimal representation of the initialization vector (32 hex characters for 16 bytes).<br></br>
+            /// The hexadecimal representation of the initialization vector.<br></br>
             /// 初始化向量的十六进制表示（16字节的32个十六进制字符）。
             /// </param>
             /// <returns>
@@ -636,8 +638,8 @@ namespace AES
             public static byte[] DecryptBytes(byte[] data, string keyHex, string ivHex)
             {
                 // 将十六进制表示的密钥和IV转换为字节数组
-                byte[] key = FormattingKeyIV(keyHex);
-                byte[] iv = FormattingKeyIV(ivHex);
+                byte[] key = FormattingKeyIV(keyHex, 32);
+                byte[] iv = FormattingKeyIV(ivHex, 16);
 
                 using (Aes aes = Aes.Create())
                 {
@@ -670,11 +672,11 @@ namespace AES
             /// 要加密的输入文件的路径。
             /// </param>
             /// <param name="keyHex">
-            /// The hexadecimal representation of the encryption key (64 hex characters for 32 bytes).<br></br>
+            /// The hexadecimal representation of the encryption key.<br></br>
             /// 加密密钥的十六进制表示（32字节的64个十六进制字符）。
             /// </param>
             /// <param name="ivHex">
-            /// The hexadecimal representation of the initialization vector (32 hex characters for 16 bytes).<br></br>
+            /// The hexadecimal representation of the initialization vector.<br></br>
             /// 初始化向量的十六进制表示（16字节的32个十六进制字符）。
             /// </param>
             /// <returns>
@@ -696,8 +698,8 @@ namespace AES
             public static byte[] EncryptFileToBytes(string filePath, string keyHex, string ivHex)
             {
                 // 将十六进制表示的密钥和IV转换为字节数组
-                byte[] key = FormattingKeyIV(keyHex);
-                byte[] iv = FormattingKeyIV(ivHex);
+                byte[] key = FormattingKeyIV(keyHex, 32);
+                byte[] iv = FormattingKeyIV(ivHex, 16);
 
                 using (Aes aes = Aes.Create())
                 {
@@ -734,11 +736,11 @@ namespace AES
             /// 解密后的数据将保存到的输出文件路径。
             /// </param>
             /// <param name="keyHex">
-            /// The hexadecimal representation of the decryption key (64 hex characters for 32 bytes).<br></br>
+            /// The hexadecimal representation of the decryption key.<br></br>
             /// 解密密钥的十六进制表示（32字节的64个十六进制字符）。
             /// </param>
             /// <param name="ivHex">
-            /// The hexadecimal representation of the initialization vector (32 hex characters for 16 bytes).<br></br>
+            /// The hexadecimal representation of the initialization vector.<br></br>
             /// 初始化向量的十六进制表示（16字节的32个十六进制字符）。
             /// </param>
             /// <exception cref="ArgumentNullException">
@@ -755,8 +757,8 @@ namespace AES
             public static void DecryptBytesToFile(byte[] encryptedData, string outputFilePath, string keyHex, string ivHex)
             {
                 // 将十六进制表示的密钥和IV转换为字节数组
-                byte[] key = FormattingKeyIV(keyHex);
-                byte[] iv = FormattingKeyIV(ivHex);
+                byte[] key = FormattingKeyIV(keyHex, 32);
+                byte[] iv = FormattingKeyIV(ivHex, 16);
 
                 using (Aes aes = Aes.Create())
                 {
@@ -790,11 +792,11 @@ namespace AES
             /// 加密后的数据将保存到的输出文件路径。
             /// </param>
             /// <param name="keyHex">
-            /// The hexadecimal representation of the encryption key (64 hex characters for 32 bytes).<br></br>
+            /// The hexadecimal representation of the encryption key.<br></br>
             /// 加密密钥的十六进制表示（32字节的64个十六进制字符）。
             /// </param>
             /// <param name="ivHex">
-            /// The hexadecimal representation of the initialization vector (32 hex characters for 16 bytes).<br></br>
+            /// The hexadecimal representation of the initialization vector.<br></br>
             /// 初始化向量的十六进制表示（16字节的32个十六进制字符）。
             /// </param>
             /// <exception cref="ArgumentNullException">
@@ -812,8 +814,8 @@ namespace AES
             public static void EncryptBytesToFile(byte[] data, string filePath, string keyHex, string ivHex)
             {
                 // 将十六进制表示的密钥和IV转换为字节数组
-                byte[] key = FormattingKeyIV(keyHex);
-                byte[] iv = FormattingKeyIV(ivHex);
+                byte[] key = FormattingKeyIV(keyHex, 32);
+                byte[] iv = FormattingKeyIV(ivHex, 16);
 
                 using (Aes aes = Aes.Create())
                 {
@@ -845,11 +847,11 @@ namespace AES
             /// 包含加密数据的文件路径。
             /// </param>
             /// <param name="keyHex">
-            /// The hexadecimal representation of the decryption key (64 hex characters for 32 bytes).<br></br>
+            /// The hexadecimal representation of the decryption key.<br></br>
             /// 解密密钥的十六进制表示（32字节的64个十六进制字符）。
             /// </param>
             /// <param name="ivHex">
-            /// The hexadecimal representation of the initialization vector (32 hex characters for 16 bytes).<br></br>
+            /// The hexadecimal representation of the initialization vector.<br></br>
             /// 初始化向量的十六进制表示（16字节的32个十六进制字符）。
             /// </param>
             /// <returns>
@@ -871,8 +873,8 @@ namespace AES
             public static byte[] DecryptFileToBytes(string filePath, string keyHex, string ivHex)
             {
                 // 将十六进制表示的密钥和IV转换为字节数组
-                byte[] key = FormattingKeyIV(keyHex);
-                byte[] iv = FormattingKeyIV(ivHex);
+                byte[] key = FormattingKeyIV(keyHex, 32);
+                byte[] iv = FormattingKeyIV(ivHex, 16);
 
                 using (Aes aes = Aes.Create())
                 {
@@ -936,17 +938,9 @@ namespace AES
                 // 检查明文是否为null
                 if (plainText == null) throw new ArgumentNullException(nameof(plainText));
 
-                // 检查密钥是否为有效的64个十六进制字符（即32字节）
-                if (string.IsNullOrEmpty(keyHex) || keyHex.Length != 64)
-                    throw new ArgumentException("Key must be 64 hex characters.", nameof(keyHex));
-
-                // 检查初始化向量（IV）是否为有效的32个十六进制字符（即16字节）
-                if (string.IsNullOrEmpty(ivHex) || ivHex.Length != 32)
-                    throw new ArgumentException("IV must be 32 hex characters.", nameof(ivHex));
-
                 // 将十六进制格式的密钥和IV转换为字节数组
-                byte[] key = FormattingKeyIV(keyHex);
-                byte[] iv = FormattingKeyIV(ivHex);
+                byte[] key = FormattingKeyIV(keyHex, 32);
+                byte[] iv = FormattingKeyIV(ivHex, 16);
 
                 using (Aes aes = Aes.Create())
                 {
@@ -985,11 +979,11 @@ namespace AES
             /// base64编码的加密文本。
             /// </param>
             /// <param name="keyHex">
-            /// The hexadecimal representation of the encryption key (64 hex characters for 32 bytes).<br></br>
+            /// The hexadecimal representation of the encryption key.<br></br>
             /// 加密密钥的十六进制表示形式(64个十六进制字符，32字节)。
             /// </param>
             /// <param name="ivHex">
-            /// The hexadecimal representation of the initialization vector (32 hex characters for 16 bytes).<br></br>
+            /// The hexadecimal representation of the initialization vector.<br></br>
             /// 初始化向量的十六进制表示(32个十六进制字符表示16字节)。
             /// </param>
             /// <returns>
@@ -1009,17 +1003,9 @@ namespace AES
                 // 检查加密文本是否为空
                 if (cipherText == null) throw new ArgumentNullException(nameof(cipherText));
 
-                // 验证密钥的长度是否为64个十六进制字符，即32字节
-                if (string.IsNullOrEmpty(keyHex) || keyHex.Length != 64)
-                    throw new ArgumentException("Key must be 64 hex characters.", nameof(keyHex));
-
-                // 验证IV的长度是否为32个十六进制字符，即16字节
-                if (string.IsNullOrEmpty(ivHex) || ivHex.Length != 32)
-                    throw new ArgumentException("IV must be 32 hex characters.", nameof(ivHex));
-
                 // 将十六进制表示的密钥和IV转换为字节数组
-                byte[] key = FormattingKeyIV(keyHex);
-                byte[] iv = FormattingKeyIV(ivHex);
+                byte[] key = FormattingKeyIV(keyHex, 32);
+                byte[] iv = FormattingKeyIV(ivHex, 16);
 
                 // 创建Aes对象来执行解密
                 using (Aes aes = Aes.Create())
@@ -1056,11 +1042,11 @@ namespace AES
             /// 要加密的字节数组数据。
             /// </param>
             /// <param name="keyHex">
-            /// The hexadecimal representation of the encryption key (64 hex characters for 32 bytes).<br></br>
+            /// The hexadecimal representation of the encryption key.<br></br>
             /// 加密密钥的十六进制表示（32字节的64个十六进制字符）。
             /// </param>
             /// <param name="ivHex">
-            /// The hexadecimal representation of the initialization vector (32 hex characters for 16 bytes).<br></br>
+            /// The hexadecimal representation of the initialization vector.<br></br>
             /// 初始化向量的十六进制表示（16字节的32个十六进制字符）。
             /// </param>
             /// <returns>
@@ -1078,8 +1064,8 @@ namespace AES
             public static string EncryptBytesToString(byte[] data, string keyHex, string ivHex)
             {
                 // 将十六进制表示的密钥和IV转换为字节数组
-                byte[] key = FormattingKeyIV(keyHex);
-                byte[] iv = FormattingKeyIV(ivHex);
+                byte[] key = FormattingKeyIV(keyHex, 32);
+                byte[] iv = FormattingKeyIV(ivHex, 16);
 
                 using (Aes aes = Aes.Create())
                 {
@@ -1114,11 +1100,11 @@ namespace AES
             /// 要解密的Base64编码的加密字符串。
             /// </param>
             /// <param name="keyHex">
-            /// The hexadecimal representation of the decryption key (64 hex characters for 32 bytes).<br></br>
+            /// The hexadecimal representation of the decryption key.<br></br>
             /// 解密密钥的十六进制表示（32字节的64个十六进制字符）。
             /// </param>
             /// <param name="ivHex">
-            /// The hexadecimal representation of the initialization vector (32 hex characters for 16 bytes).<br></br>
+            /// The hexadecimal representation of the initialization vector.<br></br>
             /// 初始化向量的十六进制表示（16字节的32个十六进制字符）。
             /// </param>
             /// <returns>
@@ -1136,8 +1122,8 @@ namespace AES
             public static byte[] DecryptStringToBytes(string encryptedData, string keyHex, string ivHex)
             {
                 // 将十六进制表示的密钥和IV转换为字节数组
-                byte[] key = FormattingKeyIV(keyHex);
-                byte[] iv = FormattingKeyIV(ivHex);
+                byte[] key = FormattingKeyIV(keyHex, 32);
+                byte[] iv = FormattingKeyIV(ivHex, 16);
                 byte[] encryptedBytes = Convert.FromBase64String(encryptedData); // 从Base64字符串转换为字节数组
 
                 using (Aes aes = Aes.Create())
@@ -1175,11 +1161,11 @@ namespace AES
             /// 要加密的纯文本字符串。
             /// </param>
             /// <param name="keyHex">
-            /// The hexadecimal representation of the encryption key (64 hex characters for 32 bytes).<br></br>
+            /// The hexadecimal representation of the encryption key.<br></br>
             /// 加密密钥的十六进制表示（32字节的64个十六进制字符）。
             /// </param>
             /// <param name="ivHex">
-            /// The hexadecimal representation of the initialization vector (32 hex characters for 16 bytes).<br></br>
+            /// The hexadecimal representation of the initialization vector.<br></br>
             /// 初始化向量的十六进制表示（16字节的32个十六进制字符）。
             /// </param>
             /// <returns>
@@ -1197,8 +1183,8 @@ namespace AES
             public static byte[] EncryptStringToBytes(string plainText, string keyHex, string ivHex)
             {
                 // 将十六进制表示的密钥和IV转换为字节数组
-                byte[] key = FormattingKeyIV(keyHex);
-                byte[] iv = FormattingKeyIV(ivHex);
+                byte[] key = FormattingKeyIV(keyHex, 32);
+                byte[] iv = FormattingKeyIV(ivHex, 16);
 
                 using (Aes aes = Aes.Create())
                 {
@@ -1235,11 +1221,11 @@ namespace AES
             /// 要解密的加密数据字节数组。
             /// </param>
             /// <param name="keyHex">
-            /// The hexadecimal representation of the decryption key (64 hex characters for 32 bytes).<br></br>
+            /// The hexadecimal representation of the decryption key.<br></br>
             /// 解密密钥的十六进制表示（32字节的64个十六进制字符）。
             /// </param>
             /// <param name="ivHex">
-            /// The hexadecimal representation of the initialization vector (32 hex characters for 16 bytes).<br></br>
+            /// The hexadecimal representation of the initialization vector.<br></br>
             /// 初始化向量的十六进制表示（16字节的32个十六进制字符）。
             /// </param>
             /// <returns>
@@ -1257,8 +1243,8 @@ namespace AES
             public static string DecryptBytesToString(byte[] cipherBytes, string keyHex, string ivHex)
             {
                 // 将十六进制表示的密钥和IV转换为字节数组
-                byte[] key = FormattingKeyIV(keyHex);
-                byte[] iv = FormattingKeyIV(ivHex);
+                byte[] key = FormattingKeyIV(keyHex, 32);
+                byte[] iv = FormattingKeyIV(ivHex, 16);
 
                 using (Aes aes = Aes.Create())
                 {
@@ -1299,11 +1285,11 @@ namespace AES
             /// 加密数据将保存到的输出文件路径。
             /// </param>
             /// <param name="keyHex">
-            /// The hexadecimal representation of the encryption key (64 hex characters for 32 bytes).<br></br>
+            /// The hexadecimal representation of the encryption key.<br></br>
             /// 加密密钥的十六进制表示（32字节的64个十六进制字符）。
             /// </param>
             /// <param name="ivHex">
-            /// The hexadecimal representation of the initialization vector (32 hex characters for 16 bytes).<br></br>
+            /// The hexadecimal representation of the initialization vector.<br></br>
             /// 初始化向量的十六进制表示（16字节的32个十六进制字符）。
             /// </param>
             /// <exception cref="ArgumentNullException">
@@ -1321,8 +1307,8 @@ namespace AES
             public static void EncryptFile(string inputFilePath, string outputFilePath, string keyHex, string ivHex)
             {
                 // 将十六进制表示的密钥和IV转换为字节数组
-                byte[] key = FormattingKeyIV(keyHex);
-                byte[] iv = FormattingKeyIV(ivHex);
+                byte[] key = FormattingKeyIV(keyHex, 32);
+                byte[] iv = FormattingKeyIV(ivHex, 16);
 
                 using (Aes aes = Aes.Create())
                 {
@@ -1356,11 +1342,11 @@ namespace AES
             /// 解密数据将保存到的输出文件路径。
             /// </param>
             /// <param name="keyHex">
-            /// The hexadecimal representation of the decryption key (64 hex characters for 32 bytes).<br></br>
+            /// The hexadecimal representation of the decryption key.<br></br>
             /// 解密密钥的十六进制表示（32字节的64个十六进制字符）。
             /// </param>
             /// <param name="ivHex">
-            /// The hexadecimal representation of the initialization vector (32 hex characters for 16 bytes).<br></br>
+            /// The hexadecimal representation of the initialization vector.<br></br>
             /// 初始化向量的十六进制表示（16字节的32个十六进制字符）。
             /// </param>
             /// <exception cref="ArgumentNullException">
@@ -1378,8 +1364,8 @@ namespace AES
             public static void DecryptFile(string inputFilePath, string outputFilePath, string keyHex, string ivHex)
             {
                 // 将十六进制表示的密钥和IV转换为字节数组
-                byte[] key = FormattingKeyIV(keyHex);
-                byte[] iv = FormattingKeyIV(ivHex);
+                byte[] key = FormattingKeyIV(keyHex, 32);
+                byte[] iv = FormattingKeyIV(ivHex, 16);
 
                 using (Aes aes = Aes.Create())
                 {
@@ -1409,11 +1395,11 @@ namespace AES
             /// 要加密的字节数组。
             /// </param>
             /// <param name="keyHex">
-            /// The hexadecimal representation of the encryption key (64 hex characters for 32 bytes).<br></br>
+            /// The hexadecimal representation of the encryption key.<br></br>
             /// 加密密钥的十六进制表示（32字节的64个十六进制字符）。
             /// </param>
             /// <param name="ivHex">
-            /// The hexadecimal representation of the initialization vector (32 hex characters for 16 bytes).<br></br>
+            /// The hexadecimal representation of the initialization vector.<br></br>
             /// 初始化向量的十六进制表示（16字节的32个十六进制字符）。
             /// </param>
             /// <returns>
@@ -1431,8 +1417,8 @@ namespace AES
             public static byte[] EncryptBytes(byte[] data, string keyHex, string ivHex)
             {
                 // 将十六进制表示的密钥和IV转换为字节数组
-                byte[] key = FormattingKeyIV(keyHex);
-                byte[] iv = FormattingKeyIV(ivHex);
+                byte[] key = FormattingKeyIV(keyHex, 32);
+                byte[] iv = FormattingKeyIV(ivHex, 16);
 
                 using (Aes aes = Aes.Create())
                 {
@@ -1465,11 +1451,11 @@ namespace AES
             /// 要解密的字节数组。
             /// </param>
             /// <param name="keyHex">
-            /// The hexadecimal representation of the decryption key (64 hex characters for 32 bytes).<br></br>
+            /// The hexadecimal representation of the decryption key.<br></br>
             /// 解密密钥的十六进制表示（32字节的64个十六进制字符）。
             /// </param>
             /// <param name="ivHex">
-            /// The hexadecimal representation of the initialization vector (32 hex characters for 16 bytes).<br></br>
+            /// The hexadecimal representation of the initialization vector.<br></br>
             /// 初始化向量的十六进制表示（16字节的32个十六进制字符）。
             /// </param>
             /// <returns>
@@ -1487,8 +1473,8 @@ namespace AES
             public static byte[] DecryptBytes(byte[] data, string keyHex, string ivHex)
             {
                 // 将十六进制表示的密钥和IV转换为字节数组
-                byte[] key = FormattingKeyIV(keyHex);
-                byte[] iv = FormattingKeyIV(ivHex);
+                byte[] key = FormattingKeyIV(keyHex, 32);
+                byte[] iv = FormattingKeyIV(ivHex, 16);
 
                 using (Aes aes = Aes.Create())
                 {
@@ -1521,11 +1507,11 @@ namespace AES
             /// 要加密的输入文件的路径。
             /// </param>
             /// <param name="keyHex">
-            /// The hexadecimal representation of the encryption key (64 hex characters for 32 bytes).<br></br>
+            /// The hexadecimal representation of the encryption key.<br></br>
             /// 加密密钥的十六进制表示（32字节的64个十六进制字符）。
             /// </param>
             /// <param name="ivHex">
-            /// The hexadecimal representation of the initialization vector (32 hex characters for 16 bytes).<br></br>
+            /// The hexadecimal representation of the initialization vector.<br></br>
             /// 初始化向量的十六进制表示（16字节的32个十六进制字符）。
             /// </param>
             /// <returns>
@@ -1547,8 +1533,8 @@ namespace AES
             public static byte[] EncryptFileToBytes(string filePath, string keyHex, string ivHex)
             {
                 // 将十六进制表示的密钥和IV转换为字节数组
-                byte[] key = FormattingKeyIV(keyHex);
-                byte[] iv = FormattingKeyIV(ivHex);
+                byte[] key = FormattingKeyIV(keyHex, 32);
+                byte[] iv = FormattingKeyIV(ivHex, 16);
 
                 using (Aes aes = Aes.Create())
                 {
@@ -1585,11 +1571,11 @@ namespace AES
             /// 解密后的数据将保存到的输出文件路径。
             /// </param>
             /// <param name="keyHex">
-            /// The hexadecimal representation of the decryption key (64 hex characters for 32 bytes).<br></br>
+            /// The hexadecimal representation of the decryption key.<br></br>
             /// 解密密钥的十六进制表示（32字节的64个十六进制字符）。
             /// </param>
             /// <param name="ivHex">
-            /// The hexadecimal representation of the initialization vector (32 hex characters for 16 bytes).<br></br>
+            /// The hexadecimal representation of the initialization vector.<br></br>
             /// 初始化向量的十六进制表示（16字节的32个十六进制字符）。
             /// </param>
             /// <exception cref="ArgumentNullException">
@@ -1606,8 +1592,8 @@ namespace AES
             public static void DecryptBytesToFile(byte[] encryptedData, string outputFilePath, string keyHex, string ivHex)
             {
                 // 将十六进制表示的密钥和IV转换为字节数组
-                byte[] key = FormattingKeyIV(keyHex);
-                byte[] iv = FormattingKeyIV(ivHex);
+                byte[] key = FormattingKeyIV(keyHex, 32);
+                byte[] iv = FormattingKeyIV(ivHex, 16);
 
                 using (Aes aes = Aes.Create())
                 {
@@ -1641,11 +1627,11 @@ namespace AES
             /// 加密后的数据将保存到的输出文件路径。
             /// </param>
             /// <param name="keyHex">
-            /// The hexadecimal representation of the encryption key (64 hex characters for 32 bytes).<br></br>
+            /// The hexadecimal representation of the encryption key.<br></br>
             /// 加密密钥的十六进制表示（32字节的64个十六进制字符）。
             /// </param>
             /// <param name="ivHex">
-            /// The hexadecimal representation of the initialization vector (32 hex characters for 16 bytes).<br></br>
+            /// The hexadecimal representation of the initialization vector.<br></br>
             /// 初始化向量的十六进制表示（16字节的32个十六进制字符）。
             /// </param>
             /// <exception cref="ArgumentNullException">
@@ -1663,8 +1649,8 @@ namespace AES
             public static void EncryptBytesToFile(byte[] data, string filePath, string keyHex, string ivHex)
             {
                 // 将十六进制表示的密钥和IV转换为字节数组
-                byte[] key = FormattingKeyIV(keyHex);
-                byte[] iv = FormattingKeyIV(ivHex);
+                byte[] key = FormattingKeyIV(keyHex, 32);
+                byte[] iv = FormattingKeyIV(ivHex, 16);
 
                 using (Aes aes = Aes.Create())
                 {
@@ -1696,11 +1682,11 @@ namespace AES
             /// 包含加密数据的文件路径。
             /// </param>
             /// <param name="keyHex">
-            /// The hexadecimal representation of the decryption key (64 hex characters for 32 bytes).<br></br>
+            /// The hexadecimal representation of the decryption key.<br></br>
             /// 解密密钥的十六进制表示（32字节的64个十六进制字符）。
             /// </param>
             /// <param name="ivHex">
-            /// The hexadecimal representation of the initialization vector (32 hex characters for 16 bytes).<br></br>
+            /// The hexadecimal representation of the initialization vector.<br></br>
             /// 初始化向量的十六进制表示（16字节的32个十六进制字符）。
             /// </param>
             /// <returns>
@@ -1722,8 +1708,8 @@ namespace AES
             public static byte[] DecryptFileToBytes(string filePath, string keyHex, string ivHex)
             {
                 // 将十六进制表示的密钥和IV转换为字节数组
-                byte[] key = FormattingKeyIV(keyHex);
-                byte[] iv = FormattingKeyIV(ivHex);
+                byte[] key = FormattingKeyIV(keyHex, 32);
+                byte[] iv = FormattingKeyIV(ivHex, 16);
 
                 using (Aes aes = Aes.Create())
                 {
@@ -1796,8 +1782,8 @@ namespace AES
                     throw new ArgumentException("IV must be 32 hex characters.", nameof(ivHex));
 
                 // 将十六进制格式的密钥和IV转换为字节数组
-                byte[] key = FormattingKeyIV(keyHex);
-                byte[] iv = FormattingKeyIV(ivHex);
+                byte[] key = FormattingKeyIV(keyHex, 32);
+                byte[] iv = FormattingKeyIV(ivHex, 16);
 
                 using (Aes aes = Aes.Create())
                 {
@@ -1836,11 +1822,11 @@ namespace AES
             /// base64编码的加密文本。
             /// </param>
             /// <param name="keyHex">
-            /// The hexadecimal representation of the encryption key (64 hex characters for 32 bytes).<br></br>
+            /// The hexadecimal representation of the encryption key.<br></br>
             /// 加密密钥的十六进制表示形式(64个十六进制字符，32字节)。
             /// </param>
             /// <param name="ivHex">
-            /// The hexadecimal representation of the initialization vector (32 hex characters for 16 bytes).<br></br>
+            /// The hexadecimal representation of the initialization vector.<br></br>
             /// 初始化向量的十六进制表示(32个十六进制字符表示16字节)。
             /// </param>
             /// <returns>
@@ -1869,8 +1855,8 @@ namespace AES
                     throw new ArgumentException("IV must be 32 hex characters.", nameof(ivHex));
 
                 // 将十六进制表示的密钥和IV转换为字节数组
-                byte[] key = FormattingKeyIV(keyHex);
-                byte[] iv = FormattingKeyIV(ivHex);
+                byte[] key = FormattingKeyIV(keyHex, 32);
+                byte[] iv = FormattingKeyIV(ivHex, 16);
 
                 // 创建Aes对象来执行解密
                 using (Aes aes = Aes.Create())
@@ -1907,11 +1893,11 @@ namespace AES
             /// 要加密的字节数组数据。
             /// </param>
             /// <param name="keyHex">
-            /// The hexadecimal representation of the encryption key (64 hex characters for 32 bytes).<br></br>
+            /// The hexadecimal representation of the encryption key.<br></br>
             /// 加密密钥的十六进制表示（32字节的64个十六进制字符）。
             /// </param>
             /// <param name="ivHex">
-            /// The hexadecimal representation of the initialization vector (32 hex characters for 16 bytes).<br></br>
+            /// The hexadecimal representation of the initialization vector.<br></br>
             /// 初始化向量的十六进制表示（16字节的32个十六进制字符）。
             /// </param>
             /// <returns>
@@ -1929,8 +1915,8 @@ namespace AES
             public static string EncryptBytesToString(byte[] data, string keyHex, string ivHex)
             {
                 // 将十六进制表示的密钥和IV转换为字节数组
-                byte[] key = FormattingKeyIV(keyHex);
-                byte[] iv = FormattingKeyIV(ivHex);
+                byte[] key = FormattingKeyIV(keyHex, 32);
+                byte[] iv = FormattingKeyIV(ivHex, 16);
 
                 using (Aes aes = Aes.Create())
                 {
@@ -1965,11 +1951,11 @@ namespace AES
             /// 要解密的Base64编码的加密字符串。
             /// </param>
             /// <param name="keyHex">
-            /// The hexadecimal representation of the decryption key (64 hex characters for 32 bytes).<br></br>
+            /// The hexadecimal representation of the decryption key.<br></br>
             /// 解密密钥的十六进制表示（32字节的64个十六进制字符）。
             /// </param>
             /// <param name="ivHex">
-            /// The hexadecimal representation of the initialization vector (32 hex characters for 16 bytes).<br></br>
+            /// The hexadecimal representation of the initialization vector.<br></br>
             /// 初始化向量的十六进制表示（16字节的32个十六进制字符）。
             /// </param>
             /// <returns>
@@ -1987,8 +1973,8 @@ namespace AES
             public static byte[] DecryptStringToBytes(string encryptedData, string keyHex, string ivHex)
             {
                 // 将十六进制表示的密钥和IV转换为字节数组
-                byte[] key = FormattingKeyIV(keyHex);
-                byte[] iv = FormattingKeyIV(ivHex);
+                byte[] key = FormattingKeyIV(keyHex, 32);
+                byte[] iv = FormattingKeyIV(ivHex, 16);
                 byte[] encryptedBytes = Convert.FromBase64String(encryptedData); // 从Base64字符串转换为字节数组
 
                 using (Aes aes = Aes.Create())
@@ -2026,11 +2012,11 @@ namespace AES
             /// 要加密的纯文本字符串。
             /// </param>
             /// <param name="keyHex">
-            /// The hexadecimal representation of the encryption key (64 hex characters for 32 bytes).<br></br>
+            /// The hexadecimal representation of the encryption key.<br></br>
             /// 加密密钥的十六进制表示（32字节的64个十六进制字符）。
             /// </param>
             /// <param name="ivHex">
-            /// The hexadecimal representation of the initialization vector (32 hex characters for 16 bytes).<br></br>
+            /// The hexadecimal representation of the initialization vector.<br></br>
             /// 初始化向量的十六进制表示（16字节的32个十六进制字符）。
             /// </param>
             /// <returns>
@@ -2048,8 +2034,8 @@ namespace AES
             public static byte[] EncryptStringToBytes(string plainText, string keyHex, string ivHex)
             {
                 // 将十六进制表示的密钥和IV转换为字节数组
-                byte[] key = FormattingKeyIV(keyHex);
-                byte[] iv = FormattingKeyIV(ivHex);
+                byte[] key = FormattingKeyIV(keyHex, 32);
+                byte[] iv = FormattingKeyIV(ivHex, 16);
 
                 using (Aes aes = Aes.Create())
                 {
@@ -2086,11 +2072,11 @@ namespace AES
             /// 要解密的加密数据字节数组。
             /// </param>
             /// <param name="keyHex">
-            /// The hexadecimal representation of the decryption key (64 hex characters for 32 bytes).<br></br>
+            /// The hexadecimal representation of the decryption key.<br></br>
             /// 解密密钥的十六进制表示（32字节的64个十六进制字符）。
             /// </param>
             /// <param name="ivHex">
-            /// The hexadecimal representation of the initialization vector (32 hex characters for 16 bytes).<br></br>
+            /// The hexadecimal representation of the initialization vector.<br></br>
             /// 初始化向量的十六进制表示（16字节的32个十六进制字符）。
             /// </param>
             /// <returns>
@@ -2108,8 +2094,8 @@ namespace AES
             public static string DecryptBytesToString(byte[] cipherBytes, string keyHex, string ivHex)
             {
                 // 将十六进制表示的密钥和IV转换为字节数组
-                byte[] key = FormattingKeyIV(keyHex);
-                byte[] iv = FormattingKeyIV(ivHex);
+                byte[] key = FormattingKeyIV(keyHex, 32);
+                byte[] iv = FormattingKeyIV(ivHex, 16);
 
                 using (Aes aes = Aes.Create())
                 {
@@ -2150,11 +2136,11 @@ namespace AES
             /// 加密数据将保存到的输出文件路径。
             /// </param>
             /// <param name="keyHex">
-            /// The hexadecimal representation of the encryption key (64 hex characters for 32 bytes).<br></br>
+            /// The hexadecimal representation of the encryption key.<br></br>
             /// 加密密钥的十六进制表示（32字节的64个十六进制字符）。
             /// </param>
             /// <param name="ivHex">
-            /// The hexadecimal representation of the initialization vector (32 hex characters for 16 bytes).<br></br>
+            /// The hexadecimal representation of the initialization vector.<br></br>
             /// 初始化向量的十六进制表示（16字节的32个十六进制字符）。
             /// </param>
             /// <exception cref="ArgumentNullException">
@@ -2172,8 +2158,8 @@ namespace AES
             public static void EncryptFile(string inputFilePath, string outputFilePath, string keyHex, string ivHex)
             {
                 // 将十六进制表示的密钥和IV转换为字节数组
-                byte[] key = FormattingKeyIV(keyHex);
-                byte[] iv = FormattingKeyIV(ivHex);
+                byte[] key = FormattingKeyIV(keyHex, 32);
+                byte[] iv = FormattingKeyIV(ivHex, 16);
 
                 using (Aes aes = Aes.Create())
                 {
@@ -2207,11 +2193,11 @@ namespace AES
             /// 解密数据将保存到的输出文件路径。
             /// </param>
             /// <param name="keyHex">
-            /// The hexadecimal representation of the decryption key (64 hex characters for 32 bytes).<br></br>
+            /// The hexadecimal representation of the decryption key.<br></br>
             /// 解密密钥的十六进制表示（32字节的64个十六进制字符）。
             /// </param>
             /// <param name="ivHex">
-            /// The hexadecimal representation of the initialization vector (32 hex characters for 16 bytes).<br></br>
+            /// The hexadecimal representation of the initialization vector.<br></br>
             /// 初始化向量的十六进制表示（16字节的32个十六进制字符）。
             /// </param>
             /// <exception cref="ArgumentNullException">
@@ -2229,8 +2215,8 @@ namespace AES
             public static void DecryptFile(string inputFilePath, string outputFilePath, string keyHex, string ivHex)
             {
                 // 将十六进制表示的密钥和IV转换为字节数组
-                byte[] key = FormattingKeyIV(keyHex);
-                byte[] iv = FormattingKeyIV(ivHex);
+                byte[] key = FormattingKeyIV(keyHex, 32);
+                byte[] iv = FormattingKeyIV(ivHex, 16);
 
                 using (Aes aes = Aes.Create())
                 {
@@ -2260,11 +2246,11 @@ namespace AES
             /// 要加密的字节数组。
             /// </param>
             /// <param name="keyHex">
-            /// The hexadecimal representation of the encryption key (64 hex characters for 32 bytes).<br></br>
+            /// The hexadecimal representation of the encryption key.<br></br>
             /// 加密密钥的十六进制表示（32字节的64个十六进制字符）。
             /// </param>
             /// <param name="ivHex">
-            /// The hexadecimal representation of the initialization vector (32 hex characters for 16 bytes).<br></br>
+            /// The hexadecimal representation of the initialization vector.<br></br>
             /// 初始化向量的十六进制表示（16字节的32个十六进制字符）。
             /// </param>
             /// <returns>
@@ -2282,8 +2268,8 @@ namespace AES
             public static byte[] EncryptBytes(byte[] data, string keyHex, string ivHex)
             {
                 // 将十六进制表示的密钥和IV转换为字节数组
-                byte[] key = FormattingKeyIV(keyHex);
-                byte[] iv = FormattingKeyIV(ivHex);
+                byte[] key = FormattingKeyIV(keyHex, 32);
+                byte[] iv = FormattingKeyIV(ivHex, 16);
 
                 using (Aes aes = Aes.Create())
                 {
@@ -2316,11 +2302,11 @@ namespace AES
             /// 要解密的字节数组。
             /// </param>
             /// <param name="keyHex">
-            /// The hexadecimal representation of the decryption key (64 hex characters for 32 bytes).<br></br>
+            /// The hexadecimal representation of the decryption key.<br></br>
             /// 解密密钥的十六进制表示（32字节的64个十六进制字符）。
             /// </param>
             /// <param name="ivHex">
-            /// The hexadecimal representation of the initialization vector (32 hex characters for 16 bytes).<br></br>
+            /// The hexadecimal representation of the initialization vector.<br></br>
             /// 初始化向量的十六进制表示（16字节的32个十六进制字符）。
             /// </param>
             /// <returns>
@@ -2338,8 +2324,8 @@ namespace AES
             public static byte[] DecryptBytes(byte[] data, string keyHex, string ivHex)
             {
                 // 将十六进制表示的密钥和IV转换为字节数组
-                byte[] key = FormattingKeyIV(keyHex);
-                byte[] iv = FormattingKeyIV(ivHex);
+                byte[] key = FormattingKeyIV(keyHex, 32);
+                byte[] iv = FormattingKeyIV(ivHex, 16);
 
                 using (Aes aes = Aes.Create())
                 {
@@ -2372,11 +2358,11 @@ namespace AES
             /// 要加密的输入文件的路径。
             /// </param>
             /// <param name="keyHex">
-            /// The hexadecimal representation of the encryption key (64 hex characters for 32 bytes).<br></br>
+            /// The hexadecimal representation of the encryption key.<br></br>
             /// 加密密钥的十六进制表示（32字节的64个十六进制字符）。
             /// </param>
             /// <param name="ivHex">
-            /// The hexadecimal representation of the initialization vector (32 hex characters for 16 bytes).<br></br>
+            /// The hexadecimal representation of the initialization vector.<br></br>
             /// 初始化向量的十六进制表示（16字节的32个十六进制字符）。
             /// </param>
             /// <returns>
@@ -2398,8 +2384,8 @@ namespace AES
             public static byte[] EncryptFileToBytes(string filePath, string keyHex, string ivHex)
             {
                 // 将十六进制表示的密钥和IV转换为字节数组
-                byte[] key = FormattingKeyIV(keyHex);
-                byte[] iv = FormattingKeyIV(ivHex);
+                byte[] key = FormattingKeyIV(keyHex, 32);
+                byte[] iv = FormattingKeyIV(ivHex, 16);
 
                 using (Aes aes = Aes.Create())
                 {
@@ -2436,11 +2422,11 @@ namespace AES
             /// 解密后的数据将保存到的输出文件路径。
             /// </param>
             /// <param name="keyHex">
-            /// The hexadecimal representation of the decryption key (64 hex characters for 32 bytes).<br></br>
+            /// The hexadecimal representation of the decryption key.<br></br>
             /// 解密密钥的十六进制表示（32字节的64个十六进制字符）。
             /// </param>
             /// <param name="ivHex">
-            /// The hexadecimal representation of the initialization vector (32 hex characters for 16 bytes).<br></br>
+            /// The hexadecimal representation of the initialization vector.<br></br>
             /// 初始化向量的十六进制表示（16字节的32个十六进制字符）。
             /// </param>
             /// <exception cref="ArgumentNullException">
@@ -2457,8 +2443,8 @@ namespace AES
             public static void DecryptBytesToFile(byte[] encryptedData, string outputFilePath, string keyHex, string ivHex)
             {
                 // 将十六进制表示的密钥和IV转换为字节数组
-                byte[] key = FormattingKeyIV(keyHex);
-                byte[] iv = FormattingKeyIV(ivHex);
+                byte[] key = FormattingKeyIV(keyHex, 32);
+                byte[] iv = FormattingKeyIV(ivHex, 16);
 
                 using (Aes aes = Aes.Create())
                 {
@@ -2492,11 +2478,11 @@ namespace AES
             /// 加密后的数据将保存到的输出文件路径。
             /// </param>
             /// <param name="keyHex">
-            /// The hexadecimal representation of the encryption key (64 hex characters for 32 bytes).<br></br>
+            /// The hexadecimal representation of the encryption key.<br></br>
             /// 加密密钥的十六进制表示（32字节的64个十六进制字符）。
             /// </param>
             /// <param name="ivHex">
-            /// The hexadecimal representation of the initialization vector (32 hex characters for 16 bytes).<br></br>
+            /// The hexadecimal representation of the initialization vector.<br></br>
             /// 初始化向量的十六进制表示（16字节的32个十六进制字符）。
             /// </param>
             /// <exception cref="ArgumentNullException">
@@ -2514,8 +2500,8 @@ namespace AES
             public static void EncryptBytesToFile(byte[] data, string filePath, string keyHex, string ivHex)
             {
                 // 将十六进制表示的密钥和IV转换为字节数组
-                byte[] key = FormattingKeyIV(keyHex);
-                byte[] iv = FormattingKeyIV(ivHex);
+                byte[] key = FormattingKeyIV(keyHex, 32);
+                byte[] iv = FormattingKeyIV(ivHex, 16);
 
                 using (Aes aes = Aes.Create())
                 {
@@ -2547,11 +2533,11 @@ namespace AES
             /// 包含加密数据的文件路径。
             /// </param>
             /// <param name="keyHex">
-            /// The hexadecimal representation of the decryption key (64 hex characters for 32 bytes).<br></br>
+            /// The hexadecimal representation of the decryption key.<br></br>
             /// 解密密钥的十六进制表示（32字节的64个十六进制字符）。
             /// </param>
             /// <param name="ivHex">
-            /// The hexadecimal representation of the initialization vector (32 hex characters for 16 bytes).<br></br>
+            /// The hexadecimal representation of the initialization vector.<br></br>
             /// 初始化向量的十六进制表示（16字节的32个十六进制字符）。
             /// </param>
             /// <returns>
@@ -2573,8 +2559,8 @@ namespace AES
             public static byte[] DecryptFileToBytes(string filePath, string keyHex, string ivHex)
             {
                 // 将十六进制表示的密钥和IV转换为字节数组
-                byte[] key = FormattingKeyIV(keyHex);
-                byte[] iv = FormattingKeyIV(ivHex);
+                byte[] key = FormattingKeyIV(keyHex, 32);
+                byte[] iv = FormattingKeyIV(ivHex, 16);
 
                 using (Aes aes = Aes.Create())
                 {
@@ -2647,8 +2633,8 @@ namespace AES
                     throw new ArgumentException("IV must be 32 hex characters.", nameof(ivHex));
 
                 // 将十六进制格式的密钥和IV转换为字节数组
-                byte[] key = FormattingKeyIV(keyHex);
-                byte[] iv = FormattingKeyIV(ivHex);
+                byte[] key = FormattingKeyIV(keyHex, 32);
+                byte[] iv = FormattingKeyIV(ivHex, 16);
 
                 using (Aes aes = Aes.Create())
                 {
@@ -2687,11 +2673,11 @@ namespace AES
             /// base64编码的加密文本。
             /// </param>
             /// <param name="keyHex">
-            /// The hexadecimal representation of the encryption key (64 hex characters for 32 bytes).<br></br>
+            /// The hexadecimal representation of the encryption key.<br></br>
             /// 加密密钥的十六进制表示形式(64个十六进制字符，32字节)。
             /// </param>
             /// <param name="ivHex">
-            /// The hexadecimal representation of the initialization vector (32 hex characters for 16 bytes).<br></br>
+            /// The hexadecimal representation of the initialization vector.<br></br>
             /// 初始化向量的十六进制表示(32个十六进制字符表示16字节)。
             /// </param>
             /// <returns>
@@ -2720,8 +2706,8 @@ namespace AES
                     throw new ArgumentException("IV must be 32 hex characters.", nameof(ivHex));
 
                 // 将十六进制表示的密钥和IV转换为字节数组
-                byte[] key = FormattingKeyIV(keyHex);
-                byte[] iv = FormattingKeyIV(ivHex);
+                byte[] key = FormattingKeyIV(keyHex, 32);
+                byte[] iv = FormattingKeyIV(ivHex, 16);
 
                 // 创建Aes对象来执行解密
                 using (Aes aes = Aes.Create())
@@ -2758,11 +2744,11 @@ namespace AES
             /// 要加密的字节数组数据。
             /// </param>
             /// <param name="keyHex">
-            /// The hexadecimal representation of the encryption key (64 hex characters for 32 bytes).<br></br>
+            /// The hexadecimal representation of the encryption key.<br></br>
             /// 加密密钥的十六进制表示（32字节的64个十六进制字符）。
             /// </param>
             /// <param name="ivHex">
-            /// The hexadecimal representation of the initialization vector (32 hex characters for 16 bytes).<br></br>
+            /// The hexadecimal representation of the initialization vector.<br></br>
             /// 初始化向量的十六进制表示（16字节的32个十六进制字符）。
             /// </param>
             /// <returns>
@@ -2780,8 +2766,8 @@ namespace AES
             public static string EncryptBytesToString(byte[] data, string keyHex, string ivHex)
             {
                 // 将十六进制表示的密钥和IV转换为字节数组
-                byte[] key = FormattingKeyIV(keyHex);
-                byte[] iv = FormattingKeyIV(ivHex);
+                byte[] key = FormattingKeyIV(keyHex, 32);
+                byte[] iv = FormattingKeyIV(ivHex, 16);
 
                 using (Aes aes = Aes.Create())
                 {
@@ -2816,11 +2802,11 @@ namespace AES
             /// 要解密的Base64编码的加密字符串。
             /// </param>
             /// <param name="keyHex">
-            /// The hexadecimal representation of the decryption key (64 hex characters for 32 bytes).<br></br>
+            /// The hexadecimal representation of the decryption key.<br></br>
             /// 解密密钥的十六进制表示（32字节的64个十六进制字符）。
             /// </param>
             /// <param name="ivHex">
-            /// The hexadecimal representation of the initialization vector (32 hex characters for 16 bytes).<br></br>
+            /// The hexadecimal representation of the initialization vector.<br></br>
             /// 初始化向量的十六进制表示（16字节的32个十六进制字符）。
             /// </param>
             /// <returns>
@@ -2838,8 +2824,8 @@ namespace AES
             public static byte[] DecryptStringToBytes(string encryptedData, string keyHex, string ivHex)
             {
                 // 将十六进制表示的密钥和IV转换为字节数组
-                byte[] key = FormattingKeyIV(keyHex);
-                byte[] iv = FormattingKeyIV(ivHex);
+                byte[] key = FormattingKeyIV(keyHex, 32);
+                byte[] iv = FormattingKeyIV(ivHex, 16);
                 byte[] encryptedBytes = Convert.FromBase64String(encryptedData); // 从Base64字符串转换为字节数组
 
                 using (Aes aes = Aes.Create())
@@ -2877,11 +2863,11 @@ namespace AES
             /// 要加密的纯文本字符串。
             /// </param>
             /// <param name="keyHex">
-            /// The hexadecimal representation of the encryption key (64 hex characters for 32 bytes).<br></br>
+            /// The hexadecimal representation of the encryption key.<br></br>
             /// 加密密钥的十六进制表示（32字节的64个十六进制字符）。
             /// </param>
             /// <param name="ivHex">
-            /// The hexadecimal representation of the initialization vector (32 hex characters for 16 bytes).<br></br>
+            /// The hexadecimal representation of the initialization vector.<br></br>
             /// 初始化向量的十六进制表示（16字节的32个十六进制字符）。
             /// </param>
             /// <returns>
@@ -2899,8 +2885,8 @@ namespace AES
             public static byte[] EncryptStringToBytes(string plainText, string keyHex, string ivHex)
             {
                 // 将十六进制表示的密钥和IV转换为字节数组
-                byte[] key = FormattingKeyIV(keyHex);
-                byte[] iv = FormattingKeyIV(ivHex);
+                byte[] key = FormattingKeyIV(keyHex, 32);
+                byte[] iv = FormattingKeyIV(ivHex, 16);
 
                 using (Aes aes = Aes.Create())
                 {
@@ -2937,11 +2923,11 @@ namespace AES
             /// 要解密的加密数据字节数组。
             /// </param>
             /// <param name="keyHex">
-            /// The hexadecimal representation of the decryption key (64 hex characters for 32 bytes).<br></br>
+            /// The hexadecimal representation of the decryption key.<br></br>
             /// 解密密钥的十六进制表示（32字节的64个十六进制字符）。
             /// </param>
             /// <param name="ivHex">
-            /// The hexadecimal representation of the initialization vector (32 hex characters for 16 bytes).<br></br>
+            /// The hexadecimal representation of the initialization vector.<br></br>
             /// 初始化向量的十六进制表示（16字节的32个十六进制字符）。
             /// </param>
             /// <returns>
@@ -2959,8 +2945,8 @@ namespace AES
             public static string DecryptBytesToString(byte[] cipherBytes, string keyHex, string ivHex)
             {
                 // 将十六进制表示的密钥和IV转换为字节数组
-                byte[] key = FormattingKeyIV(keyHex);
-                byte[] iv = FormattingKeyIV(ivHex);
+                byte[] key = FormattingKeyIV(keyHex, 32);
+                byte[] iv = FormattingKeyIV(ivHex, 16);
 
                 using (Aes aes = Aes.Create())
                 {
@@ -3001,11 +2987,11 @@ namespace AES
             /// 加密数据将保存到的输出文件路径。
             /// </param>
             /// <param name="keyHex">
-            /// The hexadecimal representation of the encryption key (64 hex characters for 32 bytes).<br></br>
+            /// The hexadecimal representation of the encryption key.<br></br>
             /// 加密密钥的十六进制表示（32字节的64个十六进制字符）。
             /// </param>
             /// <param name="ivHex">
-            /// The hexadecimal representation of the initialization vector (32 hex characters for 16 bytes).<br></br>
+            /// The hexadecimal representation of the initialization vector.<br></br>
             /// 初始化向量的十六进制表示（16字节的32个十六进制字符）。
             /// </param>
             /// <exception cref="ArgumentNullException">
@@ -3023,8 +3009,8 @@ namespace AES
             public static void EncryptFile(string inputFilePath, string outputFilePath, string keyHex, string ivHex)
             {
                 // 将十六进制表示的密钥和IV转换为字节数组
-                byte[] key = FormattingKeyIV(keyHex);
-                byte[] iv = FormattingKeyIV(ivHex);
+                byte[] key = FormattingKeyIV(keyHex, 32);
+                byte[] iv = FormattingKeyIV(ivHex, 16);
 
                 using (Aes aes = Aes.Create())
                 {
@@ -3058,11 +3044,11 @@ namespace AES
             /// 解密数据将保存到的输出文件路径。
             /// </param>
             /// <param name="keyHex">
-            /// The hexadecimal representation of the decryption key (64 hex characters for 32 bytes).<br></br>
+            /// The hexadecimal representation of the decryption key.<br></br>
             /// 解密密钥的十六进制表示（32字节的64个十六进制字符）。
             /// </param>
             /// <param name="ivHex">
-            /// The hexadecimal representation of the initialization vector (32 hex characters for 16 bytes).<br></br>
+            /// The hexadecimal representation of the initialization vector.<br></br>
             /// 初始化向量的十六进制表示（16字节的32个十六进制字符）。
             /// </param>
             /// <exception cref="ArgumentNullException">
@@ -3080,8 +3066,8 @@ namespace AES
             public static void DecryptFile(string inputFilePath, string outputFilePath, string keyHex, string ivHex)
             {
                 // 将十六进制表示的密钥和IV转换为字节数组
-                byte[] key = FormattingKeyIV(keyHex);
-                byte[] iv = FormattingKeyIV(ivHex);
+                byte[] key = FormattingKeyIV(keyHex, 32);
+                byte[] iv = FormattingKeyIV(ivHex, 16);
 
                 using (Aes aes = Aes.Create())
                 {
@@ -3111,11 +3097,11 @@ namespace AES
             /// 要加密的字节数组。
             /// </param>
             /// <param name="keyHex">
-            /// The hexadecimal representation of the encryption key (64 hex characters for 32 bytes).<br></br>
+            /// The hexadecimal representation of the encryption key.<br></br>
             /// 加密密钥的十六进制表示（32字节的64个十六进制字符）。
             /// </param>
             /// <param name="ivHex">
-            /// The hexadecimal representation of the initialization vector (32 hex characters for 16 bytes).<br></br>
+            /// The hexadecimal representation of the initialization vector.<br></br>
             /// 初始化向量的十六进制表示（16字节的32个十六进制字符）。
             /// </param>
             /// <returns>
@@ -3133,8 +3119,8 @@ namespace AES
             public static byte[] EncryptBytes(byte[] data, string keyHex, string ivHex)
             {
                 // 将十六进制表示的密钥和IV转换为字节数组
-                byte[] key = FormattingKeyIV(keyHex);
-                byte[] iv = FormattingKeyIV(ivHex);
+                byte[] key = FormattingKeyIV(keyHex, 32);
+                byte[] iv = FormattingKeyIV(ivHex, 16);
 
                 using (Aes aes = Aes.Create())
                 {
@@ -3167,11 +3153,11 @@ namespace AES
             /// 要解密的字节数组。
             /// </param>
             /// <param name="keyHex">
-            /// The hexadecimal representation of the decryption key (64 hex characters for 32 bytes).<br></br>
+            /// The hexadecimal representation of the decryption key.<br></br>
             /// 解密密钥的十六进制表示（32字节的64个十六进制字符）。
             /// </param>
             /// <param name="ivHex">
-            /// The hexadecimal representation of the initialization vector (32 hex characters for 16 bytes).<br></br>
+            /// The hexadecimal representation of the initialization vector.<br></br>
             /// 初始化向量的十六进制表示（16字节的32个十六进制字符）。
             /// </param>
             /// <returns>
@@ -3189,8 +3175,8 @@ namespace AES
             public static byte[] DecryptBytes(byte[] data, string keyHex, string ivHex)
             {
                 // 将十六进制表示的密钥和IV转换为字节数组
-                byte[] key = FormattingKeyIV(keyHex);
-                byte[] iv = FormattingKeyIV(ivHex);
+                byte[] key = FormattingKeyIV(keyHex, 32);
+                byte[] iv = FormattingKeyIV(ivHex, 16);
 
                 using (Aes aes = Aes.Create())
                 {
@@ -3223,11 +3209,11 @@ namespace AES
             /// 要加密的输入文件的路径。
             /// </param>
             /// <param name="keyHex">
-            /// The hexadecimal representation of the encryption key (64 hex characters for 32 bytes).<br></br>
+            /// The hexadecimal representation of the encryption key.<br></br>
             /// 加密密钥的十六进制表示（32字节的64个十六进制字符）。
             /// </param>
             /// <param name="ivHex">
-            /// The hexadecimal representation of the initialization vector (32 hex characters for 16 bytes).<br></br>
+            /// The hexadecimal representation of the initialization vector.<br></br>
             /// 初始化向量的十六进制表示（16字节的32个十六进制字符）。
             /// </param>
             /// <returns>
@@ -3249,8 +3235,8 @@ namespace AES
             public static byte[] EncryptFileToBytes(string filePath, string keyHex, string ivHex)
             {
                 // 将十六进制表示的密钥和IV转换为字节数组
-                byte[] key = FormattingKeyIV(keyHex);
-                byte[] iv = FormattingKeyIV(ivHex);
+                byte[] key = FormattingKeyIV(keyHex, 32);
+                byte[] iv = FormattingKeyIV(ivHex, 16);
 
                 using (Aes aes = Aes.Create())
                 {
@@ -3287,11 +3273,11 @@ namespace AES
             /// 解密后的数据将保存到的输出文件路径。
             /// </param>
             /// <param name="keyHex">
-            /// The hexadecimal representation of the decryption key (64 hex characters for 32 bytes).<br></br>
+            /// The hexadecimal representation of the decryption key.<br></br>
             /// 解密密钥的十六进制表示（32字节的64个十六进制字符）。
             /// </param>
             /// <param name="ivHex">
-            /// The hexadecimal representation of the initialization vector (32 hex characters for 16 bytes).<br></br>
+            /// The hexadecimal representation of the initialization vector.<br></br>
             /// 初始化向量的十六进制表示（16字节的32个十六进制字符）。
             /// </param>
             /// <exception cref="ArgumentNullException">
@@ -3308,8 +3294,8 @@ namespace AES
             public static void DecryptBytesToFile(byte[] encryptedData, string outputFilePath, string keyHex, string ivHex)
             {
                 // 将十六进制表示的密钥和IV转换为字节数组
-                byte[] key = FormattingKeyIV(keyHex);
-                byte[] iv = FormattingKeyIV(ivHex);
+                byte[] key = FormattingKeyIV(keyHex, 32);
+                byte[] iv = FormattingKeyIV(ivHex, 16);
 
                 using (Aes aes = Aes.Create())
                 {
@@ -3343,11 +3329,11 @@ namespace AES
             /// 加密后的数据将保存到的输出文件路径。
             /// </param>
             /// <param name="keyHex">
-            /// The hexadecimal representation of the encryption key (64 hex characters for 32 bytes).<br></br>
+            /// The hexadecimal representation of the encryption key.<br></br>
             /// 加密密钥的十六进制表示（32字节的64个十六进制字符）。
             /// </param>
             /// <param name="ivHex">
-            /// The hexadecimal representation of the initialization vector (32 hex characters for 16 bytes).<br></br>
+            /// The hexadecimal representation of the initialization vector.<br></br>
             /// 初始化向量的十六进制表示（16字节的32个十六进制字符）。
             /// </param>
             /// <exception cref="ArgumentNullException">
@@ -3365,8 +3351,8 @@ namespace AES
             public static void EncryptBytesToFile(byte[] data, string filePath, string keyHex, string ivHex)
             {
                 // 将十六进制表示的密钥和IV转换为字节数组
-                byte[] key = FormattingKeyIV(keyHex);
-                byte[] iv = FormattingKeyIV(ivHex);
+                byte[] key = FormattingKeyIV(keyHex, 32);
+                byte[] iv = FormattingKeyIV(ivHex, 16);
 
                 using (Aes aes = Aes.Create())
                 {
@@ -3398,11 +3384,11 @@ namespace AES
             /// 包含加密数据的文件路径。
             /// </param>
             /// <param name="keyHex">
-            /// The hexadecimal representation of the decryption key (64 hex characters for 32 bytes).<br></br>
+            /// The hexadecimal representation of the decryption key.<br></br>
             /// 解密密钥的十六进制表示（32字节的64个十六进制字符）。
             /// </param>
             /// <param name="ivHex">
-            /// The hexadecimal representation of the initialization vector (32 hex characters for 16 bytes).<br></br>
+            /// The hexadecimal representation of the initialization vector.<br></br>
             /// 初始化向量的十六进制表示（16字节的32个十六进制字符）。
             /// </param>
             /// <returns>
@@ -3424,8 +3410,8 @@ namespace AES
             public static byte[] DecryptFileToBytes(string filePath, string keyHex, string ivHex)
             {
                 // 将十六进制表示的密钥和IV转换为字节数组
-                byte[] key = FormattingKeyIV(keyHex);
-                byte[] iv = FormattingKeyIV(ivHex);
+                byte[] key = FormattingKeyIV(keyHex, 32);
+                byte[] iv = FormattingKeyIV(ivHex, 16);
 
                 using (Aes aes = Aes.Create())
                 {
@@ -3498,8 +3484,8 @@ namespace AES
                     throw new ArgumentException("IV must be 32 hex characters.", nameof(ivHex));
 
                 // 将十六进制格式的密钥和IV转换为字节数组
-                byte[] key = FormattingKeyIV(keyHex);
-                byte[] iv = FormattingKeyIV(ivHex);
+                byte[] key = FormattingKeyIV(keyHex, 32);
+                byte[] iv = FormattingKeyIV(ivHex, 16);
 
                 using (Aes aes = Aes.Create())
                 {
@@ -3538,11 +3524,11 @@ namespace AES
             /// base64编码的加密文本。
             /// </param>
             /// <param name="keyHex">
-            /// The hexadecimal representation of the encryption key (64 hex characters for 32 bytes).<br></br>
+            /// The hexadecimal representation of the encryption key.<br></br>
             /// 加密密钥的十六进制表示形式(64个十六进制字符，32字节)。
             /// </param>
             /// <param name="ivHex">
-            /// The hexadecimal representation of the initialization vector (32 hex characters for 16 bytes).<br></br>
+            /// The hexadecimal representation of the initialization vector.<br></br>
             /// 初始化向量的十六进制表示(32个十六进制字符表示16字节)。
             /// </param>
             /// <returns>
@@ -3571,8 +3557,8 @@ namespace AES
                     throw new ArgumentException("IV must be 32 hex characters.", nameof(ivHex));
 
                 // 将十六进制表示的密钥和IV转换为字节数组
-                byte[] key = FormattingKeyIV(keyHex);
-                byte[] iv = FormattingKeyIV(ivHex);
+                byte[] key = FormattingKeyIV(keyHex, 32);
+                byte[] iv = FormattingKeyIV(ivHex, 16);
 
                 // 创建Aes对象来执行解密
                 using (Aes aes = Aes.Create())
@@ -3609,11 +3595,11 @@ namespace AES
             /// 要加密的字节数组数据。
             /// </param>
             /// <param name="keyHex">
-            /// The hexadecimal representation of the encryption key (64 hex characters for 32 bytes).<br></br>
+            /// The hexadecimal representation of the encryption key.<br></br>
             /// 加密密钥的十六进制表示（32字节的64个十六进制字符）。
             /// </param>
             /// <param name="ivHex">
-            /// The hexadecimal representation of the initialization vector (32 hex characters for 16 bytes).<br></br>
+            /// The hexadecimal representation of the initialization vector.<br></br>
             /// 初始化向量的十六进制表示（16字节的32个十六进制字符）。
             /// </param>
             /// <returns>
@@ -3631,8 +3617,8 @@ namespace AES
             public static string EncryptBytesToString(byte[] data, string keyHex, string ivHex)
             {
                 // 将十六进制表示的密钥和IV转换为字节数组
-                byte[] key = FormattingKeyIV(keyHex);
-                byte[] iv = FormattingKeyIV(ivHex);
+                byte[] key = FormattingKeyIV(keyHex, 32);
+                byte[] iv = FormattingKeyIV(ivHex, 16);
 
                 using (Aes aes = Aes.Create())
                 {
@@ -3667,11 +3653,11 @@ namespace AES
             /// 要解密的Base64编码的加密字符串。
             /// </param>
             /// <param name="keyHex">
-            /// The hexadecimal representation of the decryption key (64 hex characters for 32 bytes).<br></br>
+            /// The hexadecimal representation of the decryption key.<br></br>
             /// 解密密钥的十六进制表示（32字节的64个十六进制字符）。
             /// </param>
             /// <param name="ivHex">
-            /// The hexadecimal representation of the initialization vector (32 hex characters for 16 bytes).<br></br>
+            /// The hexadecimal representation of the initialization vector.<br></br>
             /// 初始化向量的十六进制表示（16字节的32个十六进制字符）。
             /// </param>
             /// <returns>
@@ -3689,8 +3675,8 @@ namespace AES
             public static byte[] DecryptStringToBytes(string encryptedData, string keyHex, string ivHex)
             {
                 // 将十六进制表示的密钥和IV转换为字节数组
-                byte[] key = FormattingKeyIV(keyHex);
-                byte[] iv = FormattingKeyIV(ivHex);
+                byte[] key = FormattingKeyIV(keyHex, 32);
+                byte[] iv = FormattingKeyIV(ivHex, 16);
                 byte[] encryptedBytes = Convert.FromBase64String(encryptedData); // 从Base64字符串转换为字节数组
 
                 using (Aes aes = Aes.Create())
@@ -3728,11 +3714,11 @@ namespace AES
             /// 要加密的纯文本字符串。
             /// </param>
             /// <param name="keyHex">
-            /// The hexadecimal representation of the encryption key (64 hex characters for 32 bytes).<br></br>
+            /// The hexadecimal representation of the encryption key.<br></br>
             /// 加密密钥的十六进制表示（32字节的64个十六进制字符）。
             /// </param>
             /// <param name="ivHex">
-            /// The hexadecimal representation of the initialization vector (32 hex characters for 16 bytes).<br></br>
+            /// The hexadecimal representation of the initialization vector.<br></br>
             /// 初始化向量的十六进制表示（16字节的32个十六进制字符）。
             /// </param>
             /// <returns>
@@ -3750,8 +3736,8 @@ namespace AES
             public static byte[] EncryptStringToBytes(string plainText, string keyHex, string ivHex)
             {
                 // 将十六进制表示的密钥和IV转换为字节数组
-                byte[] key = FormattingKeyIV(keyHex);
-                byte[] iv = FormattingKeyIV(ivHex);
+                byte[] key = FormattingKeyIV(keyHex, 32);
+                byte[] iv = FormattingKeyIV(ivHex, 16);
 
                 using (Aes aes = Aes.Create())
                 {
@@ -3788,11 +3774,11 @@ namespace AES
             /// 要解密的加密数据字节数组。
             /// </param>
             /// <param name="keyHex">
-            /// The hexadecimal representation of the decryption key (64 hex characters for 32 bytes).<br></br>
+            /// The hexadecimal representation of the decryption key.<br></br>
             /// 解密密钥的十六进制表示（32字节的64个十六进制字符）。
             /// </param>
             /// <param name="ivHex">
-            /// The hexadecimal representation of the initialization vector (32 hex characters for 16 bytes).<br></br>
+            /// The hexadecimal representation of the initialization vector.<br></br>
             /// 初始化向量的十六进制表示（16字节的32个十六进制字符）。
             /// </param>
             /// <returns>
@@ -3810,8 +3796,8 @@ namespace AES
             public static string DecryptBytesToString(byte[] cipherBytes, string keyHex, string ivHex)
             {
                 // 将十六进制表示的密钥和IV转换为字节数组
-                byte[] key = FormattingKeyIV(keyHex);
-                byte[] iv = FormattingKeyIV(ivHex);
+                byte[] key = FormattingKeyIV(keyHex, 32);
+                byte[] iv = FormattingKeyIV(ivHex, 16);
 
                 using (Aes aes = Aes.Create())
                 {
@@ -3852,11 +3838,11 @@ namespace AES
             /// 加密数据将保存到的输出文件路径。
             /// </param>
             /// <param name="keyHex">
-            /// The hexadecimal representation of the encryption key (64 hex characters for 32 bytes).<br></br>
+            /// The hexadecimal representation of the encryption key.<br></br>
             /// 加密密钥的十六进制表示（32字节的64个十六进制字符）。
             /// </param>
             /// <param name="ivHex">
-            /// The hexadecimal representation of the initialization vector (32 hex characters for 16 bytes).<br></br>
+            /// The hexadecimal representation of the initialization vector.<br></br>
             /// 初始化向量的十六进制表示（16字节的32个十六进制字符）。
             /// </param>
             /// <exception cref="ArgumentNullException">
@@ -3874,8 +3860,8 @@ namespace AES
             public static void EncryptFile(string inputFilePath, string outputFilePath, string keyHex, string ivHex)
             {
                 // 将十六进制表示的密钥和IV转换为字节数组
-                byte[] key = FormattingKeyIV(keyHex);
-                byte[] iv = FormattingKeyIV(ivHex);
+                byte[] key = FormattingKeyIV(keyHex, 32);
+                byte[] iv = FormattingKeyIV(ivHex, 16);
 
                 using (Aes aes = Aes.Create())
                 {
@@ -3909,11 +3895,11 @@ namespace AES
             /// 解密数据将保存到的输出文件路径。
             /// </param>
             /// <param name="keyHex">
-            /// The hexadecimal representation of the decryption key (64 hex characters for 32 bytes).<br></br>
+            /// The hexadecimal representation of the decryption key.<br></br>
             /// 解密密钥的十六进制表示（32字节的64个十六进制字符）。
             /// </param>
             /// <param name="ivHex">
-            /// The hexadecimal representation of the initialization vector (32 hex characters for 16 bytes).<br></br>
+            /// The hexadecimal representation of the initialization vector.<br></br>
             /// 初始化向量的十六进制表示（16字节的32个十六进制字符）。
             /// </param>
             /// <exception cref="ArgumentNullException">
@@ -3931,8 +3917,8 @@ namespace AES
             public static void DecryptFile(string inputFilePath, string outputFilePath, string keyHex, string ivHex)
             {
                 // 将十六进制表示的密钥和IV转换为字节数组
-                byte[] key = FormattingKeyIV(keyHex);
-                byte[] iv = FormattingKeyIV(ivHex);
+                byte[] key = FormattingKeyIV(keyHex, 32);
+                byte[] iv = FormattingKeyIV(ivHex, 16);
 
                 using (Aes aes = Aes.Create())
                 {
@@ -3962,11 +3948,11 @@ namespace AES
             /// 要加密的字节数组。
             /// </param>
             /// <param name="keyHex">
-            /// The hexadecimal representation of the encryption key (64 hex characters for 32 bytes).<br></br>
+            /// The hexadecimal representation of the encryption key.<br></br>
             /// 加密密钥的十六进制表示（32字节的64个十六进制字符）。
             /// </param>
             /// <param name="ivHex">
-            /// The hexadecimal representation of the initialization vector (32 hex characters for 16 bytes).<br></br>
+            /// The hexadecimal representation of the initialization vector.<br></br>
             /// 初始化向量的十六进制表示（16字节的32个十六进制字符）。
             /// </param>
             /// <returns>
@@ -3984,8 +3970,8 @@ namespace AES
             public static byte[] EncryptBytes(byte[] data, string keyHex, string ivHex)
             {
                 // 将十六进制表示的密钥和IV转换为字节数组
-                byte[] key = FormattingKeyIV(keyHex);
-                byte[] iv = FormattingKeyIV(ivHex);
+                byte[] key = FormattingKeyIV(keyHex, 32);
+                byte[] iv = FormattingKeyIV(ivHex, 16);
 
                 using (Aes aes = Aes.Create())
                 {
@@ -4018,11 +4004,11 @@ namespace AES
             /// 要解密的字节数组。
             /// </param>
             /// <param name="keyHex">
-            /// The hexadecimal representation of the decryption key (64 hex characters for 32 bytes).<br></br>
+            /// The hexadecimal representation of the decryption key.<br></br>
             /// 解密密钥的十六进制表示（32字节的64个十六进制字符）。
             /// </param>
             /// <param name="ivHex">
-            /// The hexadecimal representation of the initialization vector (32 hex characters for 16 bytes).<br></br>
+            /// The hexadecimal representation of the initialization vector.<br></br>
             /// 初始化向量的十六进制表示（16字节的32个十六进制字符）。
             /// </param>
             /// <returns>
@@ -4040,8 +4026,8 @@ namespace AES
             public static byte[] DecryptBytes(byte[] data, string keyHex, string ivHex)
             {
                 // 将十六进制表示的密钥和IV转换为字节数组
-                byte[] key = FormattingKeyIV(keyHex);
-                byte[] iv = FormattingKeyIV(ivHex);
+                byte[] key = FormattingKeyIV(keyHex, 32);
+                byte[] iv = FormattingKeyIV(ivHex, 16);
 
                 using (Aes aes = Aes.Create())
                 {
@@ -4074,11 +4060,11 @@ namespace AES
             /// 要加密的输入文件的路径。
             /// </param>
             /// <param name="keyHex">
-            /// The hexadecimal representation of the encryption key (64 hex characters for 32 bytes).<br></br>
+            /// The hexadecimal representation of the encryption key.<br></br>
             /// 加密密钥的十六进制表示（32字节的64个十六进制字符）。
             /// </param>
             /// <param name="ivHex">
-            /// The hexadecimal representation of the initialization vector (32 hex characters for 16 bytes).<br></br>
+            /// The hexadecimal representation of the initialization vector.<br></br>
             /// 初始化向量的十六进制表示（16字节的32个十六进制字符）。
             /// </param>
             /// <returns>
@@ -4100,8 +4086,8 @@ namespace AES
             public static byte[] EncryptFileToBytes(string filePath, string keyHex, string ivHex)
             {
                 // 将十六进制表示的密钥和IV转换为字节数组
-                byte[] key = FormattingKeyIV(keyHex);
-                byte[] iv = FormattingKeyIV(ivHex);
+                byte[] key = FormattingKeyIV(keyHex, 32);
+                byte[] iv = FormattingKeyIV(ivHex, 16);
 
                 using (Aes aes = Aes.Create())
                 {
@@ -4138,11 +4124,11 @@ namespace AES
             /// 解密后的数据将保存到的输出文件路径。
             /// </param>
             /// <param name="keyHex">
-            /// The hexadecimal representation of the decryption key (64 hex characters for 32 bytes).<br></br>
+            /// The hexadecimal representation of the decryption key.<br></br>
             /// 解密密钥的十六进制表示（32字节的64个十六进制字符）。
             /// </param>
             /// <param name="ivHex">
-            /// The hexadecimal representation of the initialization vector (32 hex characters for 16 bytes).<br></br>
+            /// The hexadecimal representation of the initialization vector.<br></br>
             /// 初始化向量的十六进制表示（16字节的32个十六进制字符）。
             /// </param>
             /// <exception cref="ArgumentNullException">
@@ -4159,8 +4145,8 @@ namespace AES
             public static void DecryptBytesToFile(byte[] encryptedData, string outputFilePath, string keyHex, string ivHex)
             {
                 // 将十六进制表示的密钥和IV转换为字节数组
-                byte[] key = FormattingKeyIV(keyHex);
-                byte[] iv = FormattingKeyIV(ivHex);
+                byte[] key = FormattingKeyIV(keyHex, 32);
+                byte[] iv = FormattingKeyIV(ivHex, 16);
 
                 using (Aes aes = Aes.Create())
                 {
@@ -4194,11 +4180,11 @@ namespace AES
             /// 加密后的数据将保存到的输出文件路径。
             /// </param>
             /// <param name="keyHex">
-            /// The hexadecimal representation of the encryption key (64 hex characters for 32 bytes).<br></br>
+            /// The hexadecimal representation of the encryption key.<br></br>
             /// 加密密钥的十六进制表示（32字节的64个十六进制字符）。
             /// </param>
             /// <param name="ivHex">
-            /// The hexadecimal representation of the initialization vector (32 hex characters for 16 bytes).<br></br>
+            /// The hexadecimal representation of the initialization vector.<br></br>
             /// 初始化向量的十六进制表示（16字节的32个十六进制字符）。
             /// </param>
             /// <exception cref="ArgumentNullException">
@@ -4216,8 +4202,8 @@ namespace AES
             public static void EncryptBytesToFile(byte[] data, string filePath, string keyHex, string ivHex)
             {
                 // 将十六进制表示的密钥和IV转换为字节数组
-                byte[] key = FormattingKeyIV(keyHex);
-                byte[] iv = FormattingKeyIV(ivHex);
+                byte[] key = FormattingKeyIV(keyHex, 32);
+                byte[] iv = FormattingKeyIV(ivHex, 16);
 
                 using (Aes aes = Aes.Create())
                 {
@@ -4249,11 +4235,11 @@ namespace AES
             /// 包含加密数据的文件路径。
             /// </param>
             /// <param name="keyHex">
-            /// The hexadecimal representation of the decryption key (64 hex characters for 32 bytes).<br></br>
+            /// The hexadecimal representation of the decryption key.<br></br>
             /// 解密密钥的十六进制表示（32字节的64个十六进制字符）。
             /// </param>
             /// <param name="ivHex">
-            /// The hexadecimal representation of the initialization vector (32 hex characters for 16 bytes).<br></br>
+            /// The hexadecimal representation of the initialization vector.<br></br>
             /// 初始化向量的十六进制表示（16字节的32个十六进制字符）。
             /// </param>
             /// <returns>
@@ -4275,8 +4261,8 @@ namespace AES
             public static byte[] DecryptFileToBytes(string filePath, string keyHex, string ivHex)
             {
                 // 将十六进制表示的密钥和IV转换为字节数组
-                byte[] key = FormattingKeyIV(keyHex);
-                byte[] iv = FormattingKeyIV(ivHex);
+                byte[] key = FormattingKeyIV(keyHex, 32);
+                byte[] iv = FormattingKeyIV(ivHex, 16);
 
                 using (Aes aes = Aes.Create())
                 {
